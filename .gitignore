@@ -1,3 +1,8 @@
+# programm specific
+save.txt
+
+# general
 .vs
+.vscode
 Songs
 __pycache__
