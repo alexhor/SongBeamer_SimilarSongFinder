@@ -1,61 +1,72 @@
 from Song import Song
 from pathlib import Path
-import timeit, math, pickle
+import timeit, math, pickle, threading
+from time import sleep
 
 
 class Finder:
     def __init__(self, song_dir):
+        self._print_lock = threading.Lock()
         self._song_dir = song_dir
-        # check if there are any old results to load
-        try:
-            with open("save.txt", "rb") as fp:
-                self._songs = pickle.load(fp)
-                pass
-        except:
-            self.reload_songs()
+        self.reload_songs()
 
     def reload_songs(self):
         # get all song files in the given directory
         song_file_list = list(Path(self._song_dir).rglob("*.[[sS][nN][gG]"))
         # convet the files to song objects to hadle them
         self._songs = []
+        count = 0
         for song_file in song_file_list:
+            #if (count >= 300): break
             song = Song(song_file)
             if (song.valid):
                 self._songs.append(song)
-            count += 1
+                count += 1
         self.calc_similarities()
-        self.save_results()
 
     def calc_similarities(self):
         # fetch all lines
-        all_lines_list = []
-        count = 0
+        self._all_lines_list = []
         for song in self._songs:
-            if (count >= 100): break
-            all_lines_list.extend(song._song_line_list)
-            count += 1
+            self._all_lines_list.extend(song._song_line_list)
 
-        # prepare for calculations
-        required_calculations = len(all_lines_list) ** 2
-        calculations_done = 0
-        start = timeit.default_timer()
+        # prepare for calculationsself
+        self._required_calculations = len(self._all_lines_list) ** 2
+        self._calculations_done = 0
+        self._start = timeit.default_timer()
         # start calculation
-        for line in all_lines_list:
-            for comparision_line in all_lines_list:
-                line.similarity(comparision_line)
-                calculations_done += 1
-                # show progress
-                if (calculations_done % 1000000 == 0):
-                    print(calculations_done / required_calculations * 100, "%")
-                    print('Time: ', math.floor(timeit.default_timer() - start))
-        # wrap up calculation
-        stop = timeit.default_timer()
-        print('Time: ', math.floor(stop - start))
+        for song in self._songs:
+            thread = threading.Thread(target=self.__compare_line, args=(song,))
+            thread.setName(song)
+            thread.start()
+        # wait for calculations to finish
+        while True:
+            calculation_thread_count = 0
+            for thread in threading.enumerate():
+                if hasattr(thread, '_target') and thread._target == self.__compare_line:
+                    calculation_thread_count += 1
+            # no more running threads were found
+            if calculation_thread_count == 0:
+                break
 
-    def save_results(self):
-        with open("save.txt", "wb") as fp:
-            pickle.dump(self._songs, fp)
+            sleep(5)
+
+        # display final runtime
+        print("100 %")
+        stop = timeit.default_timer()
+        print('Time: ', math.floor(stop - self._start))
+
+    def __compare_line(self, song):
+        for line in song._song_line_list:
+            for comparision_line in self._all_lines_list:
+                if (line.similarity(comparision_line) != -1):
+                    self._calculations_done += 1
+                # show progress
+                if (self._calculations_done % 1000000 == 0 and not self._print_lock.locked()):
+                    self._print_lock.acquire()
+                    print(self._calculations_done / self._required_calculations * 100, "%")
+                    print('Time: ', math.floor(timeit.default_timer() - self._start))
+                    self._print_lock.release()
 
     def __debug(self):
         song = self._songs[0]

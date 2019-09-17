@@ -12,8 +12,8 @@ class Line:
 
     def similarity(self, line_to_compare_to):
         # comparing two lines of the same song is stupid
-        if(self.song == line_to_compare_to.song):
-            return 0
+        if(self.song == line_to_compare_to.song or self == line_to_compare_to):
+            return -1
 
         # get a comparison score
         similarity = Levenshtein.ratio(self.get_text(), line_to_compare_to.get_text())
@@ -23,7 +23,6 @@ class Line:
         # remember this comparison
         self._save_line_comparison(self, line_to_compare_to, similarity)
         self._save_line_comparison(line_to_compare_to, self, similarity)
-
         return similarity
 
     def _save_line_comparison(self, original_line, comparison_line, score):
