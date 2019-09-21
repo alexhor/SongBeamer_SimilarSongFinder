@@ -67,9 +67,9 @@ class Song:
             # remove markers
             if(line_is_songtext):
                 if(line[0:3] == "#C " or line[0:3] == "#H "):
-                    line = line[0:3]
+                    line = line[3:]
                 elif(re.search("^##[0-9] ", line)):
-                    line = line[0:4]
+                    line = line[4:]
 
             # check if the line has passed all tests and can be converted to a song line
             if(line_is_songtext):

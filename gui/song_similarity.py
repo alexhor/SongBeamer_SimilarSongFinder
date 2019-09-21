@@ -69,25 +69,15 @@ class song_similarity:
         # show the songs whole texts
         for line in self._song_1._song_line_list:
             label = QLabel(line.__str__())
+            if self._song_2 in line._similarities:
+                label.setStyleSheet("background-color: yellow")
             self._window.add_widget_to_left_song_preview(label)
 
         for line in self._song_2._song_line_list:
             label = QLabel(line.__str__())
+            if self._song_1 in line._similarities:
+                label.setStyleSheet("background-color: yellow")
             self._window.add_widget_to_right_song_preview(label)
-
-        
-        # show the normal song texts
-
-        """
-        left_side = self._window.get_preview_text_element_left()
-        right_side = self._window.get_preview_text_element_right()
-
-        for line in self._similar_line_list:
-            line_element_left = QLabel(line.__str__())
-            left_side.addWidget(line_element_left)
-
-            line_element_right = QLabel(self._similar_line_list[line]["similar_line"].__str__())
-            right_side.addWidget(line_element_right)"""
 
     def set_window(self, window):
         self._window = window
