@@ -80,3 +80,9 @@ class Song:
 
     def __repr__(self):
         return self._song_file.name
+
+    def __add__(self, other):
+        return self.__repr__() + other
+
+    def __radd__(self, other):
+        return other + self.__repr__()

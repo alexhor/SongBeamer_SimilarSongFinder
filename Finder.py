@@ -2,13 +2,22 @@ from Song import Song
 from pathlib import Path
 import timeit, math, pickle, threading
 from time import sleep
+from gui.song_similarity import song_similarity
 
 
 class Finder:
-    def __init__(self, song_dir):
+    def __init__(self, song_dir, progress_bar=None, main=None):
+        self._progress_bar = progress_bar
+        self._main = main
         self._print_lock = threading.Lock()
         self._song_dir = song_dir
+
+    def run(self):
         self.reload_songs()
+        self.collect_similarities()
+
+        if self._main is not None:
+            self._main.song_loading_done.emit()
 
     def reload_songs(self):
         # get all song files in the given directory
@@ -17,7 +26,7 @@ class Finder:
         self._songs = []
         count = 0
         for song_file in song_file_list:
-            #if (count >= 300): break
+            if (count >= 100): break
             song = Song(song_file)
             if (song.valid):
                 self._songs.append(song)
@@ -49,24 +58,63 @@ class Finder:
             if calculation_thread_count == 0:
                 break
 
-            sleep(5)
+            sleep(1)
 
-        # display final runtime
-        print("100 %")
         stop = timeit.default_timer()
-        print('Time: ', math.floor(stop - self._start))
+        time_elapsed = math.floor(stop - self._start)
+        # command line output
+        if self._progress_bar is None:
+            print("100 %")
+            print('Time: ', time_elapsed)
+        # gui progress bar
+        else:
+            self._progress_bar.set_progress.emit(100, time_elapsed, 0)
+            self._progress_bar.close_with_delay()
 
     def __compare_line(self, song):
         for line in song._song_line_list:
             for comparision_line in self._all_lines_list:
-                if (line.similarity(comparision_line) != -1):
-                    self._calculations_done += 1
+                line.similarity(comparision_line)
+                self._calculations_done += 1
                 # show progress
-                if (self._calculations_done % 1000000 == 0 and not self._print_lock.locked()):
+                if (self._calculations_done % 10000000 == 0 and not self._print_lock.locked()):
                     self._print_lock.acquire()
-                    print(self._calculations_done / self._required_calculations * 100, "%")
-                    print('Time: ', math.floor(timeit.default_timer() - self._start))
+                    self._update_progress_display()
                     self._print_lock.release()
+
+    def _update_progress_display(self):
+        percentage_done = self._calculations_done / self._required_calculations
+        percentage_done_nice = round(percentage_done * 100, 2)
+        time_elapsed = math.floor(timeit.default_timer() - self._start)
+        time_remaining = math.floor(time_elapsed / percentage_done) - time_elapsed
+
+        # command line output
+        if self._progress_bar is None:
+            print(percentage_done_nice, "%")
+            print('Time: ', time_elapsed, "s")
+        # gui progress bar
+        else:
+            self._progress_bar.set_progress.emit(percentage_done_nice, time_elapsed, time_remaining)
+
+    def collect_similarities(self):
+        self._similarities = {}
+
+        for song in self._songs:
+            for compare_song in self._songs:
+                for line in song._song_line_list:
+                    if compare_song in line._similarities:
+                        if song in self._similarities:
+                            similarity = self._similarities[song]
+                        elif compare_song in self._similarities:
+                            similarity = self._similarities[compare_song]
+                        else:
+                            similarity = self._similarities[song] = song_similarity(song, compare_song)
+
+                        similarity.addSimilarities(line, line._similarities[compare_song])
+
+    def get_similarities(self):
+        return self._similarities.values()
+
 
     def __debug(self):
         song = self._songs[0]
@@ -74,4 +122,6 @@ class Finder:
         song_line = song._song_line_list[0]
         print(song_line._similarities)
 
-Finder("Songs")
+
+if __name__ == "__main__":
+    Finder("Songs")
