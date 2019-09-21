@@ -26,7 +26,7 @@ class Finder:
         self._songs = []
         count = 0
         for song_file in song_file_list:
-            if (count >= 100): break
+            #if (count >= 100): break
             song = Song(song_file)
             if (song.valid):
                 self._songs.append(song)
