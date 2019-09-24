@@ -12,7 +12,11 @@ class Song:
                                     "Ending", "Outro", "Teil", "Part", "Chor",
                                     "Solo"]
 
+    next_id = 0
+
     def __init__(self, song_file):
+        self.id = self.next_id
+        Song.next_id += 1
         self.valid = False
         self._song_file = song_file
         self._song_line_list = []
@@ -86,3 +90,9 @@ class Song:
 
     def __radd__(self, other):
         return other + self.__repr__()
+
+    def __hash__(self):
+        return self.id
+
+    def __eq__(self, other_song):
+        return self.id == other_song.id

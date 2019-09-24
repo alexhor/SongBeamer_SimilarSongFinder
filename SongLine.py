@@ -2,7 +2,11 @@ import Levenshtein
 
 
 class Line:
+    next_id = 0
+
     def __init__(self, song_text, song):
+        self.id = self.next_id
+        Line.next_id += 1
         self._text = song_text
         self.song = song
         self._similarities = {}
@@ -35,3 +39,9 @@ class Line:
 
     def __repr__(self):
         return self._text
+
+    def __eq__(self, other_line):
+        return self.id == other_line.id
+
+    def __hash__(self):
+        return self.id
