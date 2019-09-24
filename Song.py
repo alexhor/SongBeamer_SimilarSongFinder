@@ -59,7 +59,7 @@ class Song:
                     else: heading_number = ""
 
                     if((verse_heading in self.supported_verse_heading_list and
-                            (heading_number == "" or re.search("^[0-9][a-z]?$", heading_number))) or
+                            (heading_number == "" or re.search("^[0-9][0-9]?[a-z]?$", heading_number))) or
                             ((verse_heading == "Part" or verse_heading == "Teil") and
                             re.search("^[A-Z]$", heading_number))):
                         line_is_songtext = False
