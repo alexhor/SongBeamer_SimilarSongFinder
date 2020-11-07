@@ -2,8 +2,8 @@
 <Form
 	xmlns="http://schema.picoe.ca/eto.forms" 
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-	Title="My Eto Form"
-	ClientSize="400, 350"
+	Title="Song Similarity Finder"
+	ClientSize="600, 400"
 	Padding="10"
 	>
 	<StackLayout>
@@ -12,23 +12,22 @@
 
 	<Form.Menu>
 		<MenuBar>
-			<ButtonMenuItem Text="F&amp;ile">
-				<ButtonMenuItem Text="Click Me!" Click="HandleClickMe" />
+			<ButtonMenuItem Text="Songs">
+				<ButtonMenuItem Text="Load" Click="HandleLoadSongs" />
+        <ButtonMenuItem Text="Find Similarities" Click="HandleFindSimilarities" />
 			</ButtonMenuItem>
-			<MenuBar.ApplicationItems>
+			<!--<MenuBar.ApplicationItems>
 				<ButtonMenuItem Text="Preferences.." Shortcut="{On Control+O, Mac=Application+Comma}" />
-			</MenuBar.ApplicationItems>
-			<MenuBar.QuitItem>
-				<ButtonMenuItem Text="Quit" Shortcut="CommonModifier+Q" Click="HandleQuit" />
-			</MenuBar.QuitItem>
+			</MenuBar.ApplicationItems>-->
 			<MenuBar.AboutItem>
-				<ButtonMenuItem Text="About..." Click="HandleAbout" />
+				<ButtonMenuItem Text="About" Click="HandleAbout" />
 			</MenuBar.AboutItem>
 		</MenuBar>
 	</Form.Menu>
-	<Form.ToolBar>
+	
+  <!--<Form.ToolBar>
 		<ToolBar>
 			<ButtonToolItem Text="Click Me!" Click="HandleClickMe" />
 		</ToolBar>
-	</Form.ToolBar>
+	</Form.ToolBar>-->
 </Form>

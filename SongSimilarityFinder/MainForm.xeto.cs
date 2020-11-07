@@ -13,19 +13,19 @@ namespace SongSimilarityFinder
             XamlReader.Load(this);
         }
 
-        protected void HandleClickMe(object sender, EventArgs e)
+        protected void HandleFindSimilarities(object sender, EventArgs e)
         {
-            MessageBox.Show("I was clicked!");
+            MessageBox.Show("Findig Similarities");
+        }
+
+        protected void HandleLoadSongs(object sender, EventArgs e)
+        {
+            MessageBox.Show("Load Songs");
         }
 
         protected void HandleAbout(object sender, EventArgs e)
         {
             new AboutDialog().ShowDialog(this);
-        }
-
-        protected void HandleQuit(object sender, EventArgs e)
-        {
-            Application.Instance.Quit();
         }
     }
 }
