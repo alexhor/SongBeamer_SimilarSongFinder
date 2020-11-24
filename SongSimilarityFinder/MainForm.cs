@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Eto.Forms;
 using Eto.Drawing;
@@ -18,8 +18,33 @@ namespace SongSimilarityFinder
         /// </summary>
         public MainForm()
         {
-            XamlReader.Load(this);
+            Title = "Song Similarity Finder";
+            ClientSize = new Size(600, 400);
+            Padding = new Padding(10);
+
+            BuildToolBar();
+
             songLoader = new SongLoader(this);
+        }
+
+        protected void BuildToolBar()
+        {
+            Menu = new MenuBar
+            {
+                Items =
+                {
+                    new ButtonMenuItem
+                    {
+                        Text = "Songs",
+                        Items =
+                        {
+                            new ButtonMenuItem(HandleLoadSongs) { Text = "Load" },
+                            new ButtonMenuItem(HandleFindSimilarities) { Text = "Find Similarities" },
+                        }
+                    }
+                },
+                AboutItem = new ButtonMenuItem(HandleAbout) { Text = "About" },
+            };
         }
 
         /// <summary>
