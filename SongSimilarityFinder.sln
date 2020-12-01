@@ -3,13 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30406.217
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SongSimilarityFinder", "SongSimilarityFinder\SongSimilarityFinder.csproj", "{E4045B3F-8C82-4D41-B163-EE2D30D0387C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SongSimilarityFinder", "SongSimilarityFinder\SongSimilarityFinder.csproj", "{E4045B3F-8C82-4D41-B163-EE2D30D0387C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SongSimilarityFinder.Gtk", "SongSimilarityFinder.Gtk\SongSimilarityFinder.Gtk.csproj", "{FF1BEF9D-18BD-489F-9DDE-196955CE49A9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SongSimilarityFinder.Gtk", "SongSimilarityFinder.Gtk\SongSimilarityFinder.Gtk.csproj", "{FF1BEF9D-18BD-489F-9DDE-196955CE49A9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SongSimilarityFinder.Mac", "SongSimilarityFinder.Mac\SongSimilarityFinder.Mac.csproj", "{D973E1A3-F9F4-4910-BEF4-6DB67A952D68}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SongSimilarityFinder.Mac", "SongSimilarityFinder.Mac\SongSimilarityFinder.Mac.csproj", "{D973E1A3-F9F4-4910-BEF4-6DB67A952D68}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SongSimilarityFinder.Wpf", "SongSimilarityFinder.Wpf\SongSimilarityFinder.Wpf.csproj", "{1B98F543-00AB-4440-89E6-7E7EAC88F4DA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SongSimilarityFinder.Wpf", "SongSimilarityFinder.Wpf\SongSimilarityFinder.Wpf.csproj", "{1B98F543-00AB-4440-89E6-7E7EAC88F4DA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
