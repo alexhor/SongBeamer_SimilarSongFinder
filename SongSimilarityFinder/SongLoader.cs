@@ -47,6 +47,8 @@ namespace SongSimilarityFinder
             fileDialog.Filters.Insert(0, fileFilter);
         }
 
+        protected IList<Song> LoadedSongList = new List<Song>();
+
         /// <summary>
         /// Show a dialog to load song files
         /// </summary>
@@ -73,14 +75,13 @@ namespace SongSimilarityFinder
                 // Load all selected filenames
                 foreach (string fileLocation in fileDialog.Filenames)
                 {
-                    LoadSong(fileLocation);
+                    LoadedSongList.Add(LoadSong(fileLocation));
                     // Update the task tracker
                     tracker.DoStep();
                 }
 
                 // Terminate the task tracker
                 tracker.TaskDone();
-                Debug.WriteLine("{0:D} songs loaded", fileDialog.Filenames.Count());
             });
         }
 
@@ -88,10 +89,16 @@ namespace SongSimilarityFinder
         /// Load a song class from the given file location
         /// </summary>
         /// <param name="fileLocation">Location to load a song class from</param>
-        protected void LoadSong(string fileLocation)
+        /// <exception cref="FileNotFoundException">If the given songfile doesn't exist</exception>
+        /// <returns>An object representing the songfile</returns>
+        protected Song LoadSong(string fileLocation)
         {
             // Make sure the file exists
-            if (!File.Exists(fileLocation)) return;
+            if (!File.Exists(fileLocation)) throw new FileNotFoundException();
+
+            // Create the song
+            Song song = new Song(fileLocation);
+            IList<SongLine> songLines = new List<SongLine>();
 
             State readerState = State.SongHeading;
             bool readNextLine = true;
@@ -150,12 +157,14 @@ namespace SongSimilarityFinder
                         else if (Regex.IsMatch(currentLine, "^##[0-9] ")) currentLine = currentLine.Substring(4);
 
                         // Store the song line
-                        Debug.WriteLine(currentLine);
+                        SongLine line = new SongLine(currentLine, song);
+                        songLines.Add(line);
                     }
                 }
             }
 
-            Debug.WriteLine("####READING SONG DONE####");
+            song.LoadLines(songLines);
+            return song;
         }
 
         /// <summary>
