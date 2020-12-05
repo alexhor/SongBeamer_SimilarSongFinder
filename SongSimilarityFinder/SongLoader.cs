@@ -119,7 +119,7 @@ namespace SongSimilarityFinder
                         // Another heading line
                         if ('#' == currentLine[0])
                         {
-                            FilterSongInfo(currentLine);
+                            FilterSongInfo(currentLine, song);
                             continue;
                         }
                         // The heading has ended and we can now read verses
@@ -192,11 +192,33 @@ namespace SongSimilarityFinder
             return false;
         }
 
-        protected void FilterSongInfo(string currentLine)
+        /// <summary>
+        /// Get information about a song fron the current song line
+        /// </summary>
+        /// <param name="currentLine">The song line to parse</param>
+        /// <param name="song">The song the information is about</param>
+        protected void FilterSongInfo(string currentLine, Song song)
         {
-            //throw new NotImplementedException();
+            // Remvoe the leading hashtag
+            if (currentLine.StartsWith("#")) currentLine = currentLine.Substring(1);
+
+            string[] splitLine = currentLine.Split('=');
+            if (2 != splitLine.Length) return;
+            string infoName = splitLine[0];
+            string info = splitLine[1];
+            
+            // Check which info is given
+            switch (infoName)
+            {
+                case "Title":
+                    song.SetTitle(info);
+                    break;
+            }
         }
 
+        /// <summary>
+        /// Representation of the song loaders state machine
+        /// </summary>
         protected enum State
         {
             SongHeading,

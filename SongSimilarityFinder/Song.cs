@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace SongSimilarityFinder
 {
@@ -12,7 +13,15 @@ namespace SongSimilarityFinder
         /// </summary>
         protected readonly string FileLocation;
 
+        /// <summary>
+        /// All text lines this song has
+        /// </summary>
         protected IList<SongLine> SongLines = new List<SongLine>();
+
+        /// <summary>
+        /// The songs title
+        /// </summary>
+        public string Title { get; private set; } = "";
 
         /// <summary>
         /// Create a new empty song
@@ -30,6 +39,15 @@ namespace SongSimilarityFinder
         internal void LoadLines(IList<SongLine> lineList)
         {
             SongLines = lineList;
+        }
+
+        /// <summary>
+        /// Set the songs title
+        /// </summary>
+        /// <param name="title">The songs title</param>
+        internal void SetTitle(string title)
+        {
+            Title = title;
         }
     }
 }
