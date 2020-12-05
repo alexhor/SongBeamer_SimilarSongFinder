@@ -16,7 +16,12 @@ namespace SongSimilarityFinder
         /// <summary>
         /// All text lines this song has
         /// </summary>
-        protected IList<SongLine> SongLines = new List<SongLine>();
+        protected IEnumerable<SongLine> SongLines = new List<SongLine>();
+
+        /// <summary>
+        /// This songs hash code
+        /// </summary>
+        private int Hash = 0;
 
         /// <summary>
         /// The songs title
@@ -33,12 +38,42 @@ namespace SongSimilarityFinder
         }
 
         /// <summary>
-        /// Add a new line at the end of this song
+        /// Load all text lines this song has
         /// </summary>
-        /// <param name="line"></param>
-        internal void LoadLines(IList<SongLine> lineList)
+        /// <param name="lineList">A list of all text lines</param>
+        internal void LoadLines(IEnumerable<SongLine> lineList)
         {
             SongLines = lineList;
+
+            foreach (SongLine line in SongLines)
+            {
+                line.LoadMetadata();
+            }
+        }
+
+
+        /// <summary>
+        /// Returns the hash code for this song
+        /// </summary>
+        /// <returns>A 32-bit signed integer hash code</returns>
+        public override int GetHashCode()
+        {
+            if (0 == Hash) CalcHash();
+            return Hash;
+        }
+
+        /// <summary>
+        /// Calculate this songs hash value
+        /// </summary>
+        private void CalcHash()
+        {
+            string songLineHashes = FileLocation;
+            foreach (SongLine line in SongLines)
+            {
+                int lineHash = line.GetHashCode();
+                songLineHashes += lineHash.ToString();
+            }
+            Hash = songLineHashes.GetHashCode();
         }
 
         /// <summary>

@@ -75,9 +75,12 @@ namespace SongSimilarityFinder
                 // Load all selected filenames
                 foreach (string fileLocation in fileDialog.Filenames)
                 {
-                    LoadedSongList.Add(LoadSong(fileLocation));
+                    Song song = LoadSong(fileLocation);
+                    LoadedSongList.Add(song);
                     // Update the task tracker
                     tracker.DoStep();
+
+                    Debug.WriteLine(song.GetHashCode());
                 }
 
                 // Terminate the task tracker
