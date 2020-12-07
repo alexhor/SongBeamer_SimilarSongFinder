@@ -49,8 +49,13 @@ namespace SongSimilarityFinder
             {
                 line.LoadMetadata();
             }
-        }
 
+
+            SongLine lineA = new SongLine("Hello World", this);
+            SongLine lineB = new SongLine("Hel sdlo Wor", this);
+            SongLineDiff diff = new SongLineDiff(lineA, lineB);
+            string lcs = diff.GetLongestCommonSubsequence();
+        }
 
         /// <summary>
         /// Returns the hash code for this song

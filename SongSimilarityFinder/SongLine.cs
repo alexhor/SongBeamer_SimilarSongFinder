@@ -13,6 +13,11 @@ namespace SongSimilarityFinder
         public readonly string Text;
 
         /// <summary>
+        /// Amount of characters in this line
+        /// </summary>
+        public int Length => Text.Length;
+
+        /// <summary>
         /// The song this line is a part of
         /// </summary>
         public readonly Song Song;
@@ -56,6 +61,25 @@ namespace SongSimilarityFinder
 
 
             // TODO: check if more metadata is stored on the harddrive
+        }
+
+        /// <summary>
+        /// Returns the song lines text
+        /// </summary>
+        /// <returns>The song lines text</returns>
+        public override string ToString()
+        {
+            return Text;
+        }
+
+        /// <summary>
+        /// Indexer declcaration
+        /// </summary>
+        /// <param name="index">Choosen index</param>
+        /// <returns></returns>
+        public char this[int index]
+        {
+            get => Text[index];
         }
     }
 }
