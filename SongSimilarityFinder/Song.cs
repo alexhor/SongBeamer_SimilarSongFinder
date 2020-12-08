@@ -49,12 +49,6 @@ namespace SongSimilarityFinder
             {
                 line.LoadMetadata();
             }
-
-
-            SongLine lineA = new SongLine("Hello World", this);
-            SongLine lineB = new SongLine("Hel sdlo Wor", this);
-            SongLineDiff diff = new SongLineDiff(lineA, lineB);
-            string lcs = diff.GetLongestCommonSubsequence();
         }
 
         /// <summary>
@@ -88,6 +82,15 @@ namespace SongSimilarityFinder
         internal void SetTitle(string title)
         {
             Title = title;
+        }
+
+        /// <summary>
+        /// Make a song usable in a foreach loop
+        /// </summary>
+        /// <returns>An Enumerator over all the songs lines</returns>
+        public IEnumerator<SongLine> GetEnumerator()
+        {
+            return SongLines.GetEnumerator();
         }
     }
 }
