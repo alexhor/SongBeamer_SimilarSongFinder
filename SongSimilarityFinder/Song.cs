@@ -76,6 +76,16 @@ namespace SongSimilarityFinder
         }
 
         /// <summary>
+        /// Check if the given object matches with this song
+        /// </summary>
+        /// <param name="objectToCompare">Object to compare to</param>
+        /// <returns>Whether the two objects match</returns>
+        public override bool Equals(object objectToCompare)
+        {
+            return objectToCompare.GetHashCode() == GetHashCode();
+        }
+
+        /// <summary>
         /// Set the songs title
         /// </summary>
         /// <param name="title">The songs title</param>
