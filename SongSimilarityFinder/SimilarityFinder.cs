@@ -45,6 +45,11 @@ namespace SongSimilarityFinder
         }
 
         /// <summary>
+        /// All already calculated song differences
+        /// </summary>
+        private readonly IDictionary<Song, IDictionary<Song, SongDiff>> CalculatedDiffs = new Dictionary<Song, IDictionary<Song, SongDiff>>();
+
+        /// <summary>
         /// Add new songs to compare
         /// </summary>
         /// <param name="songList">The song list to load</param>
@@ -90,7 +95,11 @@ namespace SongSimilarityFinder
                         ComparisonTaskTracker.DoStep();
                         if (songA == songB) continue;
 
+                        // Check if this was already calculated
+                        if (HasDiff(songA, songB)) continue;
+
                         SongDiff diff = new SongDiff(songA, songB);
+                        SetDiff(songA, songB, diff);
                         float score = diff.GetDiffRelativeScore();
                     }
                 }
@@ -107,6 +116,34 @@ namespace SongSimilarityFinder
                 stopwatch.Stop();
                 long elapsedMsc = stopwatch.ElapsedMilliseconds;
             });
+        }
+
+        /// <summary>
+        /// Save the calcualted diff between two songs
+        /// </summary>
+        /// <param name="songA">First song</param>
+        /// <param name="songB">Second song</param>
+        /// <param name="diff">Diff between the two songs</param>
+        private void SetDiff(Song songA, Song songB, SongDiff diff)
+        {
+            Song[] songList = new Song[2] { songA, songB };
+
+            for (int i = 0; i <= 1; i++)
+            {
+                if (!CalculatedDiffs.ContainsKey(songList[i])) CalculatedDiffs[songList[i]] = new Dictionary<Song, SongDiff>();
+                CalculatedDiffs[songList[i]][songList[1 - i]] = diff;
+            }
+        }
+
+        /// <summary>
+        /// Checks if a diff between these two songs has already been calculated
+        /// </summary>
+        /// <param name="songA">First song</param>
+        /// <param name="songB">Second song</param>
+        /// <returns>Whether or not this difference has been calculated before</returns>
+        private bool HasDiff(Song songA, Song songB)
+        {
+            return CalculatedDiffs.ContainsKey(songA) && CalculatedDiffs[songA].ContainsKey(songB) && CalculatedDiffs.ContainsKey(songB) && CalculatedDiffs[songB].ContainsKey(songA);
         }
     }
 }
