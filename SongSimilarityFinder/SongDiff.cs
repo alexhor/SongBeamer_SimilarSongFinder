@@ -57,6 +57,7 @@ namespace SongSimilarityFinder
             }
 
             // Normalize the scores
+            if (0 == diffCount) return;
             AbsoluteDiffScore /= diffCount;
             RelativeDiffScore /= diffCount;
         }

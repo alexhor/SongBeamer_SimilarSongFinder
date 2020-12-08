@@ -84,8 +84,6 @@ namespace SongSimilarityFinder
                     LoadedSongList.Add(song);
                     // Update the task tracker
                     tracker.DoStep();
-
-                    Debug.WriteLine(song.GetHashCode());
                 }
 
                 // Terminate the task tracker
