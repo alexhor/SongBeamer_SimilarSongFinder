@@ -26,6 +26,11 @@ namespace SongSimilarityFinder
         protected Label LabelControl;
 
         /// <summary>
+        /// Displays the number of steps already taken
+        /// </summary>
+        protected Label ProgressLabel = new Label();
+
+        /// <summary>
         /// How many steps it takes to complete this task
         /// </summary>
         protected int MaxSteps = 100;
@@ -80,6 +85,9 @@ namespace SongSimilarityFinder
                 UpdateProgress();
                 wrapper.Items.Add(ProgressBar);
 
+                // Progress label
+                wrapper.Items.Add(ProgressLabel);
+
                 // Add finished wrapper
                 GuiControl = wrapper;
             });
@@ -96,7 +104,7 @@ namespace SongSimilarityFinder
             {
                 ProgressBar.Indeterminate = false;
             });
-            UpdateProgress();
+            UpdateProgress(true);
             DoCallbacks(CallbackType.OnSetMaxStep);
         }
 
@@ -111,17 +119,29 @@ namespace SongSimilarityFinder
             DoCallbacks(CallbackType.OnStep);
         }
 
+        private bool UpdateInProgress = false;
+
         /// <summary>
         /// Recalculate the tasks current progress and update the gui accordingly
         /// </summary>
-        protected void UpdateProgress()
+        /// <param name="force">Force an update, regardless of the current steps</param>
+        protected void UpdateProgress(bool force=false)
         {
+            if (UpdateInProgress) return;
+            else UpdateInProgress = true;
+
+            // Only update in intervals
+            //if (!force && MaxSteps > 10000 && 0 != CurrentStep % 1000) return;
+
             double exactProgress = (double)CurrentStep / MaxSteps * 100;
             int ceiledProgress = (int) Math.Ceiling(exactProgress);
             Application.Instance.Invoke(() =>
             {
                 ProgressBar.Value = ceiledProgress;
+                ProgressLabel.Text = CurrentStep.ToString("N") + " / " + MaxSteps.ToString("N");
             });
+
+            UpdateInProgress = false;
         }
 
         /// <summary>
