@@ -88,7 +88,7 @@ namespace SongSimilarityFinder
                 ComparisonTaskTracker.SetMaxSteps(length);
 
                 // Loop all songs with themselves
-                foreach (Song songA in songList)
+                Parallel.ForEach(songList, songA =>
                 {
                     foreach (Song songB in songList)
                     {
@@ -102,7 +102,7 @@ namespace SongSimilarityFinder
                         SetDiff(songA, songB, diff);
                         float score = diff.GetDiffRelativeScore();
                     }
-                }
+                });
 
                 // Cleanup
                 ComparisonIsRunning = false;
@@ -128,10 +128,13 @@ namespace SongSimilarityFinder
         {
             Song[] songList = new Song[2] { songA, songB };
 
-            for (int i = 0; i <= 1; i++)
+            lock (CalculatedDiffs)
             {
-                if (!CalculatedDiffs.ContainsKey(songList[i])) CalculatedDiffs[songList[i]] = new Dictionary<Song, SongDiff>();
-                CalculatedDiffs[songList[i]][songList[1 - i]] = diff;
+                for (int i = 0; i <= 1; i++)
+                {
+                    if (!CalculatedDiffs.ContainsKey(songList[i])) CalculatedDiffs[songList[i]] = new Dictionary<Song, SongDiff>();
+                    CalculatedDiffs[songList[i]][songList[1 - i]] = diff;
+                }
             }
         }
 
@@ -143,7 +146,10 @@ namespace SongSimilarityFinder
         /// <returns>Whether or not this difference has been calculated before</returns>
         private bool HasDiff(Song songA, Song songB)
         {
-            return CalculatedDiffs.ContainsKey(songA) && CalculatedDiffs[songA].ContainsKey(songB) && CalculatedDiffs.ContainsKey(songB) && CalculatedDiffs[songB].ContainsKey(songA);
+            lock (CalculatedDiffs)
+            {
+                return CalculatedDiffs.ContainsKey(songA) && CalculatedDiffs[songA].ContainsKey(songB) && CalculatedDiffs.ContainsKey(songB) && CalculatedDiffs[songB].ContainsKey(songA);
+            }
         }
     }
 }
