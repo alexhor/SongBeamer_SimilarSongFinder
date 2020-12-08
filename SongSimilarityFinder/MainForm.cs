@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Eto.Forms;
 using Eto.Drawing;
 using System.Text;
+using System.Diagnostics;
 
 namespace SongSimilarityFinder
 {
@@ -19,6 +20,11 @@ namespace SongSimilarityFinder
         public readonly SongLoader SongLoader;
 
         /// <summary>
+        /// The object in charge of finding similarities between songs
+        /// </summary>
+        public readonly SimilarityFinder SimilarityFinder;
+
+        /// <summary>
         /// All gui elements
         /// </summary>
         protected DynamicLayout mainLayout;
@@ -33,6 +39,7 @@ namespace SongSimilarityFinder
             TaskTrackerManager = new TaskTrackerManager();
             runningTasksWrapper = TaskTrackerManager.GetWrapper();
             SongLoader = new SongLoader(this, TaskTrackerManager);
+            SimilarityFinder = new SimilarityFinder(TaskTrackerManager);
 
             // Init the gui
             Title = "Song Similarity Finder";
@@ -85,7 +92,7 @@ namespace SongSimilarityFinder
         /// <param name="e"></param>
         protected void HandleFindSimilarities(object sender, EventArgs e)
         {
-            MessageBox.Show("Findig Similarities");
+            SimilarityFinder.Start();
         }
 
         /// <summary>
@@ -95,7 +102,14 @@ namespace SongSimilarityFinder
         /// <param name="e"></param>
         protected void HandleLoadSongs(object sender, EventArgs e)
         {
-            SongLoader.LoadSongs();
+            TaskTracker tracker = SongLoader.LoadSongs();
+            // Push the new songs to the similarity finder
+            if (tracker is EmptyTaskTracker) return;
+            tracker.RegisterCallback(TaskTracker.CallbackType.OnDone, () =>
+            {
+                IEnumerable<Song> songList = SongLoader.GetSongList();
+                SimilarityFinder.LoadSongList(songList);
+            });
         }
 
         /// <summary>

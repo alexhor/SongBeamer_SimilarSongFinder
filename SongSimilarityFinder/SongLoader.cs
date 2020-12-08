@@ -10,6 +10,9 @@ using System.Threading.Tasks;
 
 namespace SongSimilarityFinder
 {
+    /// <summary>
+    /// A handler class to load song files into song classes
+    /// </summary>
     public class SongLoader
     {
         /// <summary>
@@ -47,12 +50,15 @@ namespace SongSimilarityFinder
             fileDialog.Filters.Insert(0, fileFilter);
         }
 
+        /// <summary>
+        /// All successfully loaded songs
+        /// </summary>
         protected IList<Song> LoadedSongList = new List<Song>();
 
         /// <summary>
         /// Show a dialog to load song files
         /// </summary>
-        public void LoadSongs()
+        public TaskTracker LoadSongs()
         {
             // Let the user choose song files
             DialogResult result = fileDialog.ShowDialog(ParentControl);
@@ -60,18 +66,17 @@ namespace SongSimilarityFinder
             // Only continue if files were selected
             if (DialogResult.Ok != result && DialogResult.Yes != result || 0 == fileDialog.Filenames.Count())
             {
-                return;
+                return new EmptyTaskTracker();
             }
+
+            int fileCount = fileDialog.Filenames.Count();
+            // Start tracking this task
+            TaskTracker tracker = TaskTrackerManager.NewTask(string.Format("Loading {0:D} songs", fileCount));
+            tracker.SetMaxSteps(fileCount);
 
             // Run async
             Task.Factory.StartNew(() =>
             {
-                int fileCount = fileDialog.Filenames.Count();
-
-                // Start tracking this task
-                TaskTracker tracker = TaskTrackerManager.NewTask(string.Format("Loading {0:D} songs", fileCount));
-                tracker.SetMaxSteps(fileCount);
-
                 // Load all selected filenames
                 foreach (string fileLocation in fileDialog.Filenames)
                 {
@@ -86,6 +91,8 @@ namespace SongSimilarityFinder
                 // Terminate the task tracker
                 tracker.TaskDone();
             });
+
+            return tracker;
         }
 
         /// <summary>
@@ -247,5 +254,14 @@ namespace SongSimilarityFinder
         {
             "Part", "Teil"
         };
+
+        /// <summary>
+        /// Get all currently loaded songs
+        /// </summary>
+        /// <returns>All currently loaded songs</returns>
+        public IEnumerable<Song> GetSongList()
+        {
+            return LoadedSongList;
+        }
     }
 }
