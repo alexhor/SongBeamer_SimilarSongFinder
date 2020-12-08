@@ -1,5 +1,6 @@
 ﻿using Eto.Forms;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace SongSimilarityFinder
@@ -37,6 +38,18 @@ namespace SongSimilarityFinder
         protected readonly TaskTrackerManager Manager;
 
         /// <summary>
+        /// A constructor for the empty task
+        /// </summary>
+        protected TaskTracker()
+        {
+            Application.Instance.Invoke(() =>
+            {
+                ProgressBar = new ProgressBar();
+                GuiControl = LabelControl = new Label();
+            });
+        }
+
+        /// <summary>
         /// Create the task trackers gui representation
         /// </summary>
         /// <param name="manager">The manager for this tracker</param>
@@ -63,8 +76,8 @@ namespace SongSimilarityFinder
                 ProgressBar = new ProgressBar()
                 {
                     Indeterminate = Indeterminate,
-                    Value = CurrentStep,
                 };
+                UpdateProgress();
                 wrapper.Items.Add(ProgressBar);
 
                 // Add finished wrapper
@@ -83,7 +96,8 @@ namespace SongSimilarityFinder
             {
                 ProgressBar.Indeterminate = false;
             });
-                UpdateProgress();
+            UpdateProgress();
+            DoCallbacks(CallbackType.OnSetMaxStep);
         }
 
         /// <summary>
@@ -94,6 +108,7 @@ namespace SongSimilarityFinder
         {
             CurrentStep += stepCount;
             UpdateProgress();
+            DoCallbacks(CallbackType.OnStep);
         }
 
         /// <summary>
@@ -124,6 +139,62 @@ namespace SongSimilarityFinder
                 System.Threading.Thread.Sleep(2000);
                 Manager.RemoveTracker(this);
             });
+            DoCallbacks(CallbackType.OnDone);
         }
+
+        /// <summary>
+        /// All currently registered callbacks
+        /// </summary>
+        protected IDictionary<CallbackType, IList<Action>> RegisteredCallbacks = new Dictionary<CallbackType, IList<Action>>();
+
+        /// <summary>
+        /// Register a callback function at the given hook position
+        /// </summary>
+        /// <param name="type">At what type of event this callback should be called</param>
+        /// <param name="callback">The function to call</param>
+        public void RegisterCallback(CallbackType type, Action callback)
+        {
+            if (!RegisteredCallbacks.ContainsKey(type)) RegisteredCallbacks[type] = new List<Action>();
+            RegisteredCallbacks[type].Add(callback);
+        }
+
+        /// <summary>
+        /// Run all registered callbacks of the given type
+        /// </summary>
+        /// <param name="typeToRun">What type of callback to run</param>
+        protected void DoCallbacks(CallbackType typeToRun)
+        {
+            if (!RegisteredCallbacks.ContainsKey(typeToRun)) return;
+            foreach (Action callback in RegisteredCallbacks[typeToRun])
+            {
+                callback();
+            }
+        }
+
+        /// <summary>
+        /// Different callback types that can be hooked into
+        /// </summary>
+        public enum CallbackType
+        {
+            OnStep,
+            OnDone,
+            OnSetMaxStep,
+        }
+    }
+
+    /// <summary>
+    /// Indicating a not existing task tracker
+    /// </summary>
+    public class EmptyTaskTracker : TaskTracker
+    {
+        /// <summary>
+        /// Dummy constructor to avoid exceptions
+        /// </summary>
+        public EmptyTaskTracker() :base() { }
+
+        /// <summary>
+        /// No function, just here to avoid exceptions
+        /// </summary>
+        public new void TaskDone() { }
     }
 }
