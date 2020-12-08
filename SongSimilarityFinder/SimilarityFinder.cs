@@ -47,7 +47,7 @@ namespace SongSimilarityFinder
         /// <summary>
         /// All already calculated song differences
         /// </summary>
-        private readonly IDictionary<Song, IDictionary<Song, SongDiff>> CalculatedDiffs = new Dictionary<Song, IDictionary<Song, SongDiff>>();
+        private readonly IDictionary<Song, IDictionary<Song, float>> CalculatedDiffs = new Dictionary<Song, IDictionary<Song, float>>();
 
         /// <summary>
         /// Add new songs to compare
@@ -78,30 +78,26 @@ namespace SongSimilarityFinder
 
             Task.Factory.StartNew(() =>
             {
-                Stopwatch stopwatch = new Stopwatch();
-                stopwatch.Start();
-
                 // Get a snapshot of all currently loaded songs
                 Song[] songList = new Song[AllSongs.Count];
                 AllSongs.CopyTo(songList);
-                int length = songList.Length * songList.Length;
-                ComparisonTaskTracker.SetMaxSteps(length);
+                ComparisonTaskTracker.SetMaxSteps(songList.Length);
 
                 // Loop all songs with themselves
                 Parallel.ForEach(songList, songA =>
                 {
                     foreach (Song songB in songList)
                     {
-                        ComparisonTaskTracker.DoStep();
                         if (songA == songB) continue;
 
                         // Check if this was already calculated
                         if (HasDiff(songA, songB)) continue;
 
                         SongDiff diff = new SongDiff(songA, songB);
-                        SetDiff(songA, songB, diff);
                         float score = diff.GetDiffRelativeScore();
+                        SetDiff(songA, songB, score);
                     }
+                    ComparisonTaskTracker.DoStep();
                 });
 
                 // Cleanup
@@ -112,9 +108,6 @@ namespace SongSimilarityFinder
                     ComparisonTaskTracker.TaskDone();
                     ComparisonTaskTracker = new EmptyTaskTracker();
                 }
-
-                stopwatch.Stop();
-                long elapsedMsc = stopwatch.ElapsedMilliseconds;
             });
         }
 
@@ -123,8 +116,8 @@ namespace SongSimilarityFinder
         /// </summary>
         /// <param name="songA">First song</param>
         /// <param name="songB">Second song</param>
-        /// <param name="diff">Diff between the two songs</param>
-        private void SetDiff(Song songA, Song songB, SongDiff diff)
+        /// <param name="diff">Diff score between the two songs</param>
+        private void SetDiff(Song songA, Song songB, float diff)
         {
             Song[] songList = new Song[2] { songA, songB };
 
@@ -132,7 +125,7 @@ namespace SongSimilarityFinder
             {
                 for (int i = 0; i <= 1; i++)
                 {
-                    if (!CalculatedDiffs.ContainsKey(songList[i])) CalculatedDiffs[songList[i]] = new Dictionary<Song, SongDiff>();
+                    if (!CalculatedDiffs.ContainsKey(songList[i])) CalculatedDiffs[songList[i]] = new Dictionary<Song, float>();
                     CalculatedDiffs[songList[i]][songList[1 - i]] = diff;
                 }
             }
