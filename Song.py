@@ -82,6 +82,9 @@ class Song:
             # reset variables
             verse_ended_in_last_line = False
 
+    def get_text_as_line(self):
+        return ' '.join(str(line) for line in self._song_line_list)
+
     def __repr__(self):
         return self._song_file.name
 

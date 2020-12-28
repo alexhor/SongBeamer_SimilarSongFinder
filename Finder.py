@@ -1,12 +1,24 @@
-from Song import Song
+import math
+import threading
+import timeit
 from pathlib import Path
-import timeit, math, pickle, threading
-from time import sleep
-from gui.song_similarity import song_similarity
+
+import pandas as pd
+import numpy as np
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+
+from Song import Song
 
 
 class Finder:
     def __init__(self, song_dir, progress_bar=None, main=None):
+        self._similarities = {}
+        self._calculations_done = 0
+        self._songs = pd.DataFrame(columns=['name', 'text'])
+        # similarity threshold
+        self._cosine_threshold = 0.8
+
         self._progress_bar = progress_bar
         self._main = main
         self._print_lock = threading.Lock()
@@ -22,46 +34,86 @@ class Finder:
     def reload_songs(self):
         # get all song files in the given directory
         song_file_list = list(Path(self._song_dir).rglob("*.[[sS][nN][gG]"))
-        # convet the files to song objects to hadle them
-        self._songs = []
+        # convert the files to song objects to handle them
         count = 0
+        song_dict = {'name': [], 'text': []}
         for song_file in song_file_list:
-            #if (count >= 100): break
+            # if count >= 1000: break
             song = Song(song_file)
-            if (song.valid):
-                self._songs.append(song)
+            if song.valid:
+                song_dict['name'].append(str(song))
+                song_dict['text'].append(song.get_text_as_line())
                 count += 1
-        self.calc_similarities()
 
-    def calc_similarities(self):
-        # fetch all lines
-        self._all_lines_list = []
-        for song in self._songs:
-            self._all_lines_list.extend(song._song_line_list)
+        self._songs.name = pd.Series(song_dict['name'])
+        self._songs.text = pd.Series(song_dict['text'])
 
-        # prepare for calculationsself
-        self._required_calculations = len(self._all_lines_list) ** 2
+    def collect_similarities(self):
+        # prepare for calculations
         self._calculations_done = 0
-        self._start = timeit.default_timer()
-        # start calculation
-        for song in self._songs:
-            thread = threading.Thread(target=self.__compare_line, args=(song,))
-            thread.setName(song)
-            thread.start()
-        # wait for calculations to finish
-        while True:
-            calculation_thread_count = 0
-            for thread in threading.enumerate():
-                if hasattr(thread, '_target') and thread._target == self.__compare_line:
-                    calculation_thread_count += 1
-            # no more running threads were found
-            if calculation_thread_count == 0:
-                break
+        timer_start = timeit.default_timer()
 
-            sleep(1)
+        # calculate similarities
+        tfidf = TfidfVectorizer()
+        tfidf.fit(self._songs.text)
+        tfidf_transform = tfidf.transform(self._songs.text)
 
-        stop = timeit.default_timer()
-        time_elapsed = math.floor(stop - self._start)
+        # subdivide data in batches and process each batch
+        batch_size = 2048
+        total_batches = math.floor(tfidf_transform.shape[0] / batch_size)
+        batch_num = 0
+        processing_not_finished = True
+        self._similarities = {}
+        while processing_not_finished:
+            start = batch_num * batch_size
+            end = start + batch_size
+            if end + 1 >= tfidf_transform.shape[0]:
+                end = tfidf_transform.shape[0] - 1
+                processing_not_finished = False
+            song_vec = tfidf_transform[start:end]
+            similarities = cosine_similarity(tfidf_transform, song_vec) > self._cosine_threshold
+            # only look at lower triangle of matrix
+            similarities = np.tril(similarities, -1)
+
+            if np.sum(similarities) > 0:
+                # get song indices of matching songs
+                indices = np.argwhere(similarities == True)
+                # add start value of batch to column ids for correct ids in dataframe
+                indices[:, 1] += batch_num * batch_size
+                replace_indices = lambda idx: self._songs['name'].values[idx]
+                names = replace_indices(indices)
+                # create dict with matching songs
+                for song_tuple in names:
+                    song_orig = song_tuple[0]
+                    song_copy = song_tuple[1]
+                    if song_orig not in self._similarities:
+                        self._similarities[song_orig] = [song_copy]
+                    else:
+                        self._similarities[song_orig].append(song_copy)
+
+                    if song_copy not in self._similarities:
+                        self._similarities[song_copy] = [song_orig]
+                    else:
+                        self._similarities[song_copy].append(song_orig)
+
+            # update progress if not finished
+            if processing_not_finished:
+                progress = batch_num * 100 / total_batches
+                timer_lap = timeit.default_timer()
+                time_elapsed = math.floor(timer_lap - timer_start)
+                # command line output
+                if self._progress_bar is None:
+                    print("comparing songs %d %%" % progress)
+                # gui progress bar
+                else:
+                    self._progress_bar.set_progress.emit(100, time_elapsed, 0)
+                    self._progress_bar.close_with_delay()
+            batch_num += 1
+
+        timer_stop = timeit.default_timer()
+        time_elapsed = math.floor(timer_stop - timer_start)
+        self._calculations_done = 1
+
         # command line output
         if self._progress_bar is None:
             print("100 %")
@@ -71,57 +123,10 @@ class Finder:
             self._progress_bar.set_progress.emit(100, time_elapsed, 0)
             self._progress_bar.close_with_delay()
 
-    def __compare_line(self, song):
-        for line in song._song_line_list:
-            for comparision_line in self._all_lines_list:
-                line.similarity(comparision_line)
-                self._calculations_done += 1
-                # show progress
-                if (self._calculations_done % 10000000 == 0 and not self._print_lock.locked()):
-                    self._print_lock.acquire()
-                    self._update_progress_display()
-                    self._print_lock.release()
-
-    def _update_progress_display(self):
-        percentage_done = self._calculations_done / self._required_calculations
-        percentage_done_nice = round(percentage_done * 100, 2)
-        time_elapsed = math.floor(timeit.default_timer() - self._start)
-        time_remaining = math.floor(time_elapsed / percentage_done) - time_elapsed
-
-        # command line output
-        if self._progress_bar is None:
-            print(percentage_done_nice, "%")
-            print('Time: ', time_elapsed, "s")
-        # gui progress bar
-        else:
-            self._progress_bar.set_progress.emit(percentage_done_nice, time_elapsed, time_remaining)
-
-    def collect_similarities(self):
-        self._similarities = {}
-
-        for song in self._songs:
-            for compare_song in self._songs:
-                for line in song._song_line_list:
-                    if compare_song in line._similarities:
-                        if song in self._similarities:
-                            similarity = self._similarities[song]
-                        elif compare_song in self._similarities:
-                            similarity = self._similarities[compare_song]
-                        else:
-                            similarity = self._similarities[song] = song_similarity(song, compare_song)
-
-                        similarity.addSimilarities(line, line._similarities[compare_song])
-
     def get_similarities(self):
-        return self._similarities.values()
-
-
-    def __debug(self):
-        song = self._songs[0]
-        print(song)
-        song_line = song._song_line_list[0]
-        print(song_line._similarities)
+        return self._similarities
 
 
 if __name__ == "__main__":
-    Finder("Songs")
+    finder = Finder("Songs")
+    finder.run()
