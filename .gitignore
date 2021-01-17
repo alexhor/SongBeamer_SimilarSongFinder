@@ -1,6 +1,9 @@
 # programm specific
 save.txt
 
+# PyCharm
+.idea
+
 # general
 .vs
 .vscode

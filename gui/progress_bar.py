@@ -25,8 +25,7 @@ class progress_bar(QWidget):
         self._time_wrapper.addWidget(self._time_left_label)
         self._layout.addLayout(self._time_wrapper)
 
-        self.resize(300, 50)
-        #self.show()
+        self.resize(500, 80)
 
         self.set_progress.connect(self._set_progress)
 

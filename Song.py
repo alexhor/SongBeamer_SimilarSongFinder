@@ -86,7 +86,7 @@ class Song:
         return ' '.join(str(line) for line in self._song_line_list)
 
     def __repr__(self):
-        return self._song_file.name
+        return str(self._song_file)
 
     def __add__(self, other):
         return self.__repr__() + other

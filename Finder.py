@@ -23,13 +23,18 @@ class Finder:
         self._main = main
         self._print_lock = threading.Lock()
         self._song_dir = song_dir
+        self._loaded_song_dict = {}
 
     def run(self):
         self.reload_songs()
-        self.collect_similarities()
 
         if self._main is not None:
             self._main.song_loading_done.emit()
+
+        self.collect_similarities()
+
+        if self._main is not None:
+            self._main.collecting_similarities_done.emit()
 
     def reload_songs(self):
         # get all song files in the given directory
@@ -37,9 +42,11 @@ class Finder:
         # convert the files to song objects to handle them
         count = 0
         song_dict = {'name': [], 'text': []}
+        loaded_song_dict = {}
         for song_file in song_file_list:
             # if count >= 1000: break
             song = Song(song_file)
+            self._loaded_song_dict[str(song)] = song
             if song.valid:
                 song_dict['name'].append(str(song))
                 song_dict['text'].append(song.get_text_as_line())
@@ -98,16 +105,19 @@ class Finder:
 
             # update progress if not finished
             if processing_not_finished:
-                progress = batch_num * 100 / total_batches
-                timer_lap = timeit.default_timer()
-                time_elapsed = math.floor(timer_lap - timer_start)
+
+                percentage_done = (batch_num + 1) / total_batches
+                percentage_done_nice = round(percentage_done * 100, 2)
+                time_elapsed = math.floor(timeit.default_timer() - timer_start)
+                time_remaining = math.floor(time_elapsed / percentage_done) - time_elapsed
+
                 # command line output
                 if self._progress_bar is None:
-                    print("comparing songs %d %%" % progress)
+                    print(percentage_done_nice, "%")
+                    print('Time: ', time_elapsed, "s")
                 # gui progress bar
                 else:
-                    self._progress_bar.set_progress.emit(100, time_elapsed, 0)
-                    self._progress_bar.close_with_delay()
+                    self._progress_bar.set_progress.emit(percentage_done_nice, time_elapsed, time_remaining)
             batch_num += 1
 
         timer_stop = timeit.default_timer()
@@ -125,6 +135,9 @@ class Finder:
 
     def get_similarities(self):
         return self._similarities
+
+    def get_loaded_song_dict(self):
+        return self._loaded_song_dict
 
 
 if __name__ == "__main__":

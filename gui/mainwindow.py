@@ -1,10 +1,12 @@
-import sys, math
-from PySide2.QtWidgets import (QLabel, QPushButton, QHBoxLayout, QWidget, QSpacerItem,
-                                QColumnView, QListWidget, QVBoxLayout, QScrollArea)
+import math
+
 from PySide2.QtCore import Qt
+from PySide2.QtWidgets import (QPushButton, QHBoxLayout, QWidget, QVBoxLayout, QScrollArea)
+
+from gui.songsimilarity import SongSimilarity
 
 
-class main_window(QWidget):
+class MainWindow(QWidget):
     def __init__(self):
         QWidget.__init__(self)
 
@@ -14,7 +16,7 @@ class main_window(QWidget):
         self.similarity_list_scroll = QScrollArea()
 
         self.generate_scroll_area(self.similarity_list_layout,
-                self.similarity_list_wrapper_widget, self.similarity_list_scroll)
+                                  self.similarity_list_wrapper_widget, self.similarity_list_scroll)
 
         # text preview
         self.text_preview_wrapper_widget = QWidget()
@@ -22,7 +24,7 @@ class main_window(QWidget):
         self.text_preview_scroll = QScrollArea()
 
         self.generate_scroll_area(self.text_preview_layout,
-                self.text_preview_wrapper_widget, self.text_preview_scroll)
+                                  self.text_preview_wrapper_widget, self.text_preview_scroll)
 
         # left song preview
         self._left_song_preview_wrapper_widget = QWidget()
@@ -30,7 +32,7 @@ class main_window(QWidget):
         self._left_song_preview_scroll = QScrollArea()
 
         self.generate_scroll_area(self._left_song_preview,
-                self._left_song_preview_wrapper_widget, self._left_song_preview_scroll)
+                                  self._left_song_preview_wrapper_widget, self._left_song_preview_scroll)
 
         # right song preview
         self._right_song_preview_wrapper_widget = QWidget()
@@ -38,7 +40,7 @@ class main_window(QWidget):
         self._right_song_preview_scroll = QScrollArea()
 
         self.generate_scroll_area(self._right_song_preview,
-                self._right_song_preview_wrapper_widget, self._right_song_preview_scroll)
+                                  self._right_song_preview_wrapper_widget, self._right_song_preview_scroll)
 
         # main layout
         self.layout = QHBoxLayout()
@@ -56,7 +58,8 @@ class main_window(QWidget):
         self.adjustSize()
         return output
 
-    def generate_scroll_area(self, layout, wrapper_widget, scroll_area):
+    @staticmethod
+    def generate_scroll_area(layout, wrapper_widget, scroll_area):
         layout.addStretch()
         layout.setAlignment(Qt.AlignTop)
         wrapper_widget.setLayout(layout)
@@ -68,17 +71,23 @@ class main_window(QWidget):
 
     def adjustSize(self):
         width = self.width()
-        
+
         self.similarity_list_scroll.setFixedWidth(math.floor(width * 0.2))
         self.text_preview_scroll.setFixedWidth(math.floor(width * 0.3))
         self._left_song_preview_scroll.setFixedWidth(math.floor(width * 0.2))
         self._right_song_preview_scroll.setFixedWidth(math.floor(width * 0.2))
-    
-    def load_similarities(self, similarity_list):
-        for similarity in similarity_list:
+
+    def load_similarities(self, similarity_list, loaded_song_dict):
+        for song_orig, similar_songs_list in similarity_list.items():
+            # Replace song file names with actual songs objects
+            song_orig = loaded_song_dict[song_orig]
+            for i in range(len(similar_songs_list)):
+                similar_songs_list[i] = loaded_song_dict[similar_songs_list[i]]
+
+            similarity = SongSimilarity(song_orig, similar_songs_list)
             similarity.set_window(self)
             self.similarity_list_layout.addWidget(similarity.get_button_widget(),
-                                        self.similarity_list_layout.count() -1)
+                                                  self.similarity_list_layout.count() - 1)
 
     def get_preview_text_element_left(self):
         return self.text_preview_left
@@ -124,10 +133,11 @@ class main_window(QWidget):
 
 
 def show():
-    widget = main_window()
+    widget = MainWindow()
     widget.resize(1280, 720)
     widget.show()
     return widget
+
 
 if __name__ == "__main__":
     show()
