@@ -12,11 +12,13 @@ from gui.ProgressBar import ProgressBar
 
 
 class SimilarityFinder:
-    def __init__(self, song_dir: str, progress_bar: ProgressBar = None, main=None):
+    def __init__(self, song_dir, progress_bar=None, main=None):
         """Find similarities between songs in a directory
-        :type main: Main.Main
+        :type song_dir: str
         :param song_dir: Directory containing all song files
+        :type progress_bar: ProgressBar
         :param progress_bar: The progress bar object tracking the calculation progress
+        :type main: Main.Main
         :param main: The programs main class, handling callbacks
         """
         # Init parameters
@@ -69,7 +71,9 @@ class SimilarityFinder:
         self._songs.text = pd.Series(song_dict['text'])
 
     def replace_indices(self, idx):
-        """Replace the indices in all songs"""
+        """Replace the indices in all songs
+        :type idx: int
+        :param idx: Indices to replace"""
         return self._songs['name'].values[idx]
 
     def collect_similarities(self):

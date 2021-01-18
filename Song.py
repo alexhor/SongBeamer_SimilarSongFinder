@@ -16,8 +16,9 @@ class Song:
     # To uniquely identify each song
     next_id = 0
 
-    def __init__(self, song_file: Path):
+    def __init__(self, song_file):
         """Extract a song from the given file
+        :type song_file: Path
         :param song_file: Path to the file to extract from"""
         # Set unique id
         self.id = self.next_id
@@ -36,8 +37,9 @@ class Song:
         except UnicodeDecodeError:
             print("Error reading file", song_file)
 
-    def _read_lines(self, content: list[str]):
+    def _read_lines(self, content):
         """Parse the given song file content into valid song lines
+        :type content: list[str]
         :param content: All lines of a song file"""
         header_has_ended = False
         verse_ended_in_last_line = False
