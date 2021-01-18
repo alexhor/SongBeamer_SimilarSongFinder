@@ -5,10 +5,13 @@ from Song import Song
 
 
 class SongDetails(QDialog):
-    def __init__(self, song: Song, parent: QWidget, remove_callback=None):
+    def __init__(self, song: Song, parent, remove_callback=None):
         """Show a popup with a songs details
+        :type song: Song
         :param song: The song whose details should be shown
+        :type parent: QWidget
         :param parent: The parent widget
+        :type remove_callback: (Song) -> None
         :param remove_callback: A function to call when the song should be removed"""
         super().__init__(parent)
         # Set parameters
