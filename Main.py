@@ -6,6 +6,7 @@ from PySide2.QtWidgets import (QApplication, QFileDialog, QWidget, QVBoxLayout)
 
 import gui.MainWindow as MainWindow
 from SimilarityFinder import SimilarityFinder
+from gui.LoadedSongsOverview import LoadedSongsOverview
 from gui.ProgressBar import ProgressBar
 
 
@@ -20,10 +21,15 @@ class Main(QWidget):
         # Set layout
         self._layout = QVBoxLayout()
         self.setLayout(self._layout)
+        self.setWindowTitle("Main")
+
+        self._loaded_songs_overview = LoadedSongsOverview()
+        self._loaded_songs_overview.show()
+
         # Get the working directory
-        self._song_folder = self._choose_song_folder()
+        #self._song_folder = self._choose_song_folder()
         # Calculate similarities between all songs in the working directory
-        self._calc_similarities()
+        #self._calc_similarities()
 
     def _choose_song_folder(self):
         """Select a working directory, where all SongBeamer songs are saved
@@ -78,5 +84,5 @@ class Main(QWidget):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    Main()
+    main = Main()
     sys.exit(app.exec_())

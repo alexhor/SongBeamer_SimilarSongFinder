@@ -98,9 +98,18 @@ class Song:
             # Reset variables
             verse_ended_in_last_line = False
 
+    def get_text(self):
+        """Get the songs text as a multiline text"""
+        return '\n'.join(str(line) for line in self._song_line_list)
+
     def get_text_as_line(self):
         """Get the songs text as one line"""
         return ' '.join(str(line) for line in self._song_line_list)
+
+    def get_name(self):
+        """Get the songs name
+        :return str: The songs name"""
+        return self._song_file.name
 
     def __repr__(self):
         return str(self._song_file)
