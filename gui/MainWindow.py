@@ -58,17 +58,21 @@ class MainWindow(QWidget):
         self.resize(1280, 720)
         self.show()
 
-    def resizeEvent(self, event: QResizeEvent):
+    def resizeEvent(self, event):
         """Always match the columns size to the windows
+        :type event: QResizeEvent
         :param event: Resize event"""
         super().resizeEvent(event)
         self.adjustSize()
 
     @staticmethod
-    def generate_scroll_area(layout: QLayout, wrapper_widget: QWidget, scroll_area: QScrollArea):
+    def generate_scroll_area(layout, wrapper_widget, scroll_area):
         """Add a scroll area to the given layout
+        :type layout: QLayout
         :param layout: The layout the scroll area should be added to
+        :type wrapper_widget: QWidget
         :param wrapper_widget: The widget wrapping the layout
+        :type scroll_area: QScrollArea
         :param scroll_area: The scroll area to add"""
         layout.addStretch()
         layout.setAlignment(Qt.AlignTop)
@@ -80,7 +84,7 @@ class MainWindow(QWidget):
         scroll_area.setWidget(wrapper_widget)
 
     def adjustSize(self):
-        """"""
+        """Fit all columns to the windows width"""
         width = self.width()
 
         self.similarity_list_scroll.setFixedWidth(math.floor(width * 0.2))
@@ -88,9 +92,11 @@ class MainWindow(QWidget):
         self._left_song_preview_scroll.setFixedWidth(math.floor(width * 0.2))
         self._right_song_preview_scroll.setFixedWidth(math.floor(width * 0.2))
 
-    def load_similarities(self, similarity_list: dict[str: list[str]], loaded_song_dict: dict[str: Song]):
+    def load_similarities(self, similarity_list, loaded_song_dict):
         """Show all songs with similarities in the gui
+        :type similarity_list: dict[str: list[str]]
         :param similarity_list: All similarities between songs
+        :type loaded_song_dict: dict[str: Song]
         :param loaded_song_dict: All loaded song objects"""
         for song_orig, similar_songs_list in similarity_list.items():
             # Replace song file names with actual songs objects

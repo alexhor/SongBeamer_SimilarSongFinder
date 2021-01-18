@@ -4,7 +4,10 @@ class SongLine:
 
     def __init__(self, song_text: str, song):
         """A song line of a song
+        :type song_text: str
+        :param song_text: The lines text
         :type song: Song.Song
+        :param song: The song this line is a part of
         """
         # Set unique id
         self.id = self.next_id

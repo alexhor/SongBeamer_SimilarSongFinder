@@ -32,10 +32,13 @@ class ProgressBar(QWidget):
         # noinspection PyUnresolvedReferences
         self.set_progress.connect(self._set_progress)
 
-    def _set_progress(self, percentage_done: int, time_elapsed: int, time_remaining: int):
+    def _set_progress(self, percentage_done, time_elapsed, time_remaining):
         """Handle incoming progress updates
+        :type percentage_done: int
         :param percentage_done: The progress to set, from 0 to 100
+        :type time_elapsed: int
         :param time_elapsed: Total time elapsed, in seconds
+        :type time_remaining: int
         :param time_remaining: Approximate time remaining, in seconds
         """
         self._progress_bar.setValue(percentage_done)

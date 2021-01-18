@@ -3,7 +3,11 @@ from PySide2.QtWidgets import (QLabel, QPushButton, QHBoxLayout, QWidget)
 
 class SongSimilarity:
     def __init__(self, song_orig, song_similarity_list):
-        """Display all songs similar to one song"""
+        """Display all songs similar to one song
+        :type song_orig: Song
+        :param song_orig: The referenced song
+        :type song_similarity_list: list[Song]
+        :param song_similarity_list: All songs similar to the reference one"""
         self._song_orig = song_orig
         self._song_similarity_list = song_similarity_list
         self._button = QPushButton()
@@ -50,5 +54,7 @@ class SongSimilarity:
             self._window.add_widget_to_text_preview(wrapper)
 
     def set_window(self, window):
-        """Set the parent window"""
+        """Set the parent window
+        :type window: QWidget
+        :param window: The parent widget"""
         self._window = window
