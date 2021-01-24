@@ -1,14 +1,10 @@
-from PySide2.QtWidgets import (QWidget, QPushButton, QMainWindow, QAction, QHBoxLayout, QBoxLayout, QGridLayout,
-                               QListWidget, QListWidgetItem, QLayoutItem, QScrollArea, QVBoxLayout)
 from typing import List
+
+from PySide2.QtWidgets import (QWidget, QPushButton, QMainWindow, QAction, QScrollArea, QVBoxLayout)
 
 from Song import Song
 from gui.LoadSongsDialog import LoadSongsDialog
 from gui.SongDetails import SongDetails
-
-
-class QHorizontalLayout(object):
-    pass
 
 
 class LoadedSongsOverview(QMainWindow):
