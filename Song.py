@@ -126,4 +126,14 @@ class Song:
         return self.id
 
     def __eq__(self, other_song):
-        return self.id == other_song.id
+        # Compare to other song object
+        if type(other_song) == Song:
+            other_song: Song
+            return self._song_file == other_song._song_file
+        # Compare to string
+        elif type(other_song) == str:
+            other_song: str
+            return self._song_file == other_song
+        # Default
+        else:
+            return False

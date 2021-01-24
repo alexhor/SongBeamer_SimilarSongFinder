@@ -17,7 +17,7 @@ class LoadedSongsOverview(QMainWindow):
         super().__init__()
 
         # Main layout
-        #self.resize(1280, 720)
+        self.resize(450, 600)
         self.setWindowTitle("Loaded Songs")
         self.scrollableWrapper = QScrollArea()
         self.setCentralWidget(self.scrollableWrapper)
@@ -95,7 +95,11 @@ class LoadedSongsOverview(QMainWindow):
         :type song: Song
         :param song: The song to remove"""
         # Remove from list
-        self._song_list.remove(song)
+        try:
+            self._song_list.remove(song)
+        # Song doesn't exist anymore
+        except ValueError:
+            return
         # Remove from gui
         song_widget: QWidget = self._song_gui_list[song]
         self._song_gui_list.pop(song)

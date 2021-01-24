@@ -20,7 +20,7 @@ class SongDetails(QDialog):
         self._remove_callback = remove_callback
         # Set gui
         self.setWindowTitle(song.get_name())
-        self.setWindowModality(Qt.ApplicationModal)
+        #self.setWindowModality(Qt.ApplicationModal)
         self.layout = QVBoxLayout(self)
         self.setLayout(self.layout)
         # Remove action

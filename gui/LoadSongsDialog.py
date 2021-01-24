@@ -13,7 +13,7 @@ class LoadSongsDialog(QFileDialog):
         :param parent: Parent widget"""
         # Setup dialog
         super().__init__(parent, 'SongBeamer Files', filter='SongBeamer Files (*.sng)')
-        self.setWindowModality(Qt.ApplicationModal)
+        #self.setWindowModality(Qt.ApplicationModal)
 
     def get_songs_by_dir(self):
         """Let the user select a directory to load songs from, recursively
@@ -38,7 +38,8 @@ class LoadSongsDialog(QFileDialog):
         song_file_list = self.selectedFiles()
         return self._load_song_file_list(song_file_list)
 
-    def _load_song_file_list(self, song_file_list):
+    @staticmethod
+    def _load_song_file_list(song_file_list):
         """Load song objects for the given list of song files
         :type song_file_list: List[str | Path]
         :param song_file_list: The list of song files to load
