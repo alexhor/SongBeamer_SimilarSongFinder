@@ -4,32 +4,25 @@ import threading
 from PySide2.QtCore import Signal
 from PySide2.QtWidgets import (QApplication, QFileDialog, QWidget, QVBoxLayout)
 
-import gui.MainWindow as MainWindow
+from gui.MainWindow import MainWindow
 from SimilarityFinder import SimilarityFinder
 from gui.LoadedSongsOverview import LoadedSongsOverview
 from gui.ProgressBar import ProgressBar
 
 
-class Main(QWidget):
+class Main:
     # Incoming progress updates
     song_loading_done = Signal()
     collecting_similarities_done = Signal()
 
     def __init__(self):
         """Show the main application window"""
-        super().__init__()
-        # Set layout
-        self._layout = QVBoxLayout()
-        self.setLayout(self._layout)
-        self.setWindowTitle("Main")
-
-        self._loaded_songs_overview = LoadedSongsOverview()
-        self._loaded_songs_overview.show()
-
-        # Get the working directory
-        #self._song_folder = self._choose_song_folder()
-        # Calculate similarities between all songs in the working directory
-        #self._calc_similarities()
+        app = QApplication(sys.argv)
+        # Open the main window
+        self._main_window = MainWindow()
+        self._main_window.show()
+        # Quit when the user exits the program
+        sys.exit(app.exec_())
 
     def _choose_song_folder(self):
         """Select a working directory, where all SongBeamer songs are saved
@@ -83,6 +76,4 @@ class Main(QWidget):
 
 
 if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    main = Main()
-    sys.exit(app.exec_())
+    Main()
