@@ -15,7 +15,7 @@ from gui.ProgressBar import ProgressBar
 
 
 class SimilarityFinder:
-    def __init__(self, song_list, progress_bar=None, calculations_done_signal=None, similarity_threshold=0.8):
+    def __init__(self, song_list, progress_bar=None, calculations_done_signal=None, similarity_threshold=0.4):
         """Find similarities between songs in a directory
         :type song_list: list[Song]
         :param song_list: All song files to compare
@@ -101,9 +101,7 @@ class SimilarityFinder:
             # Only look at lower triangle of matrix
             similarities = np.tril(similarities, -1)
 
-            sim = np.sum(similarities)
-
-            if 0 < np.sum(similarities):
+            if 0 > np.sum(similarities):
                 # Get song indices of matching songs
                 indices = np.argwhere(similarities)
                 # Add start value of batch to column ids for correct ids in dataframe
