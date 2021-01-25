@@ -1,17 +1,16 @@
-import math
-
-from PySide2.QtCore import Qt
-from PySide2.QtGui import QResizeEvent
-from PySide2.QtWidgets import (QPushButton, QHBoxLayout, QWidget, QVBoxLayout, QScrollArea, QLayout, QMainWindow,
+from PySide2.QtCore import Signal
+from PySide2.QtWidgets import (QWidget, QVBoxLayout, QScrollArea, QMainWindow,
                                QAction)
 
-from Song import Song
+from SimilarityFinder import SimilarityFinder
 from gui.LoadedSongsOverview import LoadedSongsOverview
 from gui.ProgressBar import ProgressBar
-from gui.SongSimilarity import SongSimilarity
 
 
 class MainWindow(QMainWindow):
+    # Incoming progress updates
+    _collecting_similarities_done: Signal = Signal()
+
     def __init__(self):
         """The main window displaying all song similarities"""
         super().__init__()
@@ -60,6 +59,10 @@ class MainWindow(QMainWindow):
         """Calculate the similarities between all currently loaded songs and display them"""
         progress_bar = ProgressBar()
         loaded_song_list = self._loaded_songs_window.get_loaded_song_list()
+        self.setCentralWidget(progress_bar)
+        similarity_finder = SimilarityFinder(loaded_song_list, progress_bar, self._collecting_similarities_done)
+        similarities = similarity_finder.get_similarities()
+        print(similarities)
 
     def closeEvent(self, event):
         """Handle close event

@@ -116,12 +116,6 @@ class Song:
     def __repr__(self):
         return str(self._song_file)
 
-    def __add__(self, other):
-        return self.__repr__() + other
-
-    def __radd__(self, other):
-        return other + self.__repr__()
-
     def __hash__(self):
         return self.id
 
