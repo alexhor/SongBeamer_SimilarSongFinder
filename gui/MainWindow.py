@@ -1,10 +1,15 @@
+from functools import partial
+from typing import List
+
 from PySide2.QtCore import Signal
 from PySide2.QtWidgets import (QWidget, QVBoxLayout, QScrollArea, QMainWindow,
-                               QAction)
+                               QAction, QPushButton)
 
 from SimilarityFinder import SimilarityFinder
+from Song import Song
 from gui.LoadedSongsOverview import LoadedSongsOverview
 from gui.ProgressBar import ProgressBar
+from gui.SongSimilarity import SongSimilarity
 
 
 class MainWindow(QMainWindow):
@@ -17,6 +22,8 @@ class MainWindow(QMainWindow):
 
         # Setup parameters
         self._similarity_finder: SimilarityFinder
+        self._song_similarity_gui_list: List[SongSimilarity] = []
+        self._song_gui_list: dict[Song, QPushButton] = {}
 
         # Setup signal callbacks
         self._calculating_similarities_done.connect(self._do_calculating_similarities_done)
@@ -47,7 +54,41 @@ class MainWindow(QMainWindow):
             return
         # Get the calculated similarities
         similarities = self._similarity_finder.get_similarities()
-        print(similarities)
+        # Display them
+        self._build_similarities_gui(similarities)
+
+    def _build_similarities_gui(self, similarities):
+        """Build a gui for a list of similarities
+        :type similarities: dict[Song, list[Song]"""
+        # Setup gui
+        self.scrollableWrapper = QScrollArea()
+        self.setCentralWidget(self.scrollableWrapper)
+
+        self.centralLayout = QVBoxLayout()
+        self.centralWidget = QWidget()
+        self.centralWidget.setLayout(self.centralLayout)
+
+        self.scrollableWrapper.setWidget(self.centralWidget)
+        self.scrollableWrapper.setWidgetResizable(True)
+
+        # Add all songs to gui
+        for song in similarities.keys():
+            song: Song
+            button: QPushButton = QPushButton(song.get_name(), self)
+            button.clicked.connect(partial(self._show_similar_songs, song, similarities[song]))
+            self.centralLayout.addWidget(button)
+            self._song_gui_list[song] = button
+
+    def _show_similar_songs(self, song, similar_song_list):
+        """Show all a songs similarities
+        :type song: Song.Song
+        :param song: The main song
+        :type similar_song_list: list[Song.Song]
+        :param similar_song_list: The list of similar songs"""
+        song_similarity_gui: SongSimilarity = SongSimilarity(song, similar_song_list)
+        song_similarity_gui.show()
+        song_similarity_gui.activateWindow()
+        self._song_similarity_gui_list.append(song_similarity_gui)
 
     def _create_menu_bar(self):
         """Build the windows menu bar"""
@@ -82,5 +123,8 @@ class MainWindow(QMainWindow):
         :param event: The triggered event"""
         # Close any other open windows first
         self._loaded_songs_window.close()
+        for window in self._song_similarity_gui_list:
+            window: LoadedSongsOverview
+            window.close()
         # Now close this one
         super().closeEvent(event)

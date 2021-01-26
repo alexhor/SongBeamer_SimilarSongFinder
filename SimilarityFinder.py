@@ -28,6 +28,7 @@ class SimilarityFinder:
         """
         # Init parameters
         self._similarities = {}
+        self._song_lookup = {}
         self._songs = pd.DataFrame(columns=['name', 'text'])
         # Get passed parameters
         self._song_list: List[Song] = song_list
@@ -59,6 +60,7 @@ class SimilarityFinder:
             song: Song
             song_dict['name'].append(str(song))
             song_dict['text'].append(song.get_text_as_line())
+            self._song_lookup[str(song)] = song
         # Prepare songs with pandas
         self._songs.name = pd.Series(song_dict['name'])
         self._songs.text = pd.Series(song_dict['text'])
@@ -155,5 +157,14 @@ class SimilarityFinder:
 
     def get_similarities(self):
         """Get a list of all calculated similarities
-        :return list[list[str]]: All calculated similarities"""
-        return self._similarities
+        :return dict[Song, list[Song]]: All calculated similarities"""
+        # Get the corresponding objects to the calculated similarities
+        similarities = {}
+        for key, similar_song_list in self._similarities.items():
+            # Get all similar songs
+            song_list = []
+            for similar_song in similar_song_list:
+                song_list.append(self._song_lookup[similar_song])
+            # Add the song and its similarities
+            similarities[self._song_lookup[key]] = song_list
+        return similarities

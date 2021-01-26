@@ -100,12 +100,19 @@ class Song:
             # Reset variables
             verse_ended_in_last_line = False
 
+    def get_line_list(self):
+        """Get the list of all song lines
+        :return list[SongLine]: The song line list"""
+        return self._song_line_list
+
     def get_text(self):
-        """Get the songs text as a multiline text"""
+        """Get the songs text as a multiline text
+        :return str: The songs text as multiline"""
         return '\n'.join(str(line) for line in self._song_line_list)
 
     def get_text_as_line(self):
-        """Get the songs text as one line"""
+        """Get the songs text as one line
+        :return str: The songs text as one line"""
         return ' '.join(str(line) for line in self._song_line_list)
 
     def get_name(self):
