@@ -116,14 +116,18 @@ class Song:
     def __repr__(self):
         return str(self._song_file)
 
-    def __add__(self, other):
-        return self.__repr__() + other
-
-    def __radd__(self, other):
-        return other + self.__repr__()
-
     def __hash__(self):
         return self.id
 
     def __eq__(self, other_song):
-        return self.id == other_song.id
+        # Compare to other song object
+        if type(other_song) == Song:
+            other_song: Song
+            return self._song_file == other_song._song_file
+        # Compare to string
+        elif type(other_song) == str:
+            other_song: str
+            return self._song_file == other_song
+        # Default
+        else:
+            return False

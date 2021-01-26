@@ -1,14 +1,10 @@
-from PySide2.QtWidgets import (QWidget, QPushButton, QMainWindow, QAction, QHBoxLayout, QBoxLayout, QGridLayout,
-                               QListWidget, QListWidgetItem, QLayoutItem, QScrollArea, QVBoxLayout)
 from typing import List
+
+from PySide2.QtWidgets import (QWidget, QPushButton, QMainWindow, QAction, QScrollArea, QVBoxLayout)
 
 from Song import Song
 from gui.LoadSongsDialog import LoadSongsDialog
 from gui.SongDetails import SongDetails
-
-
-class QHorizontalLayout(object):
-    pass
 
 
 class LoadedSongsOverview(QMainWindow):
@@ -17,7 +13,7 @@ class LoadedSongsOverview(QMainWindow):
         super().__init__()
 
         # Main layout
-        #self.resize(1280, 720)
+        self.resize(450, 600)
         self.setWindowTitle("Loaded Songs")
         self.scrollableWrapper = QScrollArea()
         self.setCentralWidget(self.scrollableWrapper)
@@ -41,9 +37,9 @@ class LoadedSongsOverview(QMainWindow):
         """Build the windows menu bar"""
         menu_bar = self.menuBar()
         # Load songs action
-        self._load_songs_action = QAction("&Load Files", self)
+        self._load_songs_action: QAction = QAction("&Load Files", self)
         self._load_songs_action.triggered.connect(self.do_load_songs_gui_action)
-        self._load_song_dir_action = QAction("Load &Directory", self)
+        self._load_song_dir_action: QAction = QAction("Load &Directory", self)
         self._load_song_dir_action.triggered.connect(self.do_load_song_dir_gui_action)
         # Song menu
         songs_menu = menu_bar.addMenu("&Songs")
@@ -95,8 +91,17 @@ class LoadedSongsOverview(QMainWindow):
         :type song: Song
         :param song: The song to remove"""
         # Remove from list
-        self._song_list.remove(song)
+        try:
+            self._song_list.remove(song)
+        # Song doesn't exist anymore
+        except ValueError:
+            return
         # Remove from gui
         song_widget: QWidget = self._song_gui_list[song]
         self._song_gui_list.pop(song)
         song_widget.deleteLater()
+
+    def get_loaded_song_list(self):
+        """Get a list of all loaded songs
+        :return List[Song]: The list of all loaded songs"""
+        return self._song_list

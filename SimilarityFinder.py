@@ -1,9 +1,12 @@
 import math
 import timeit
 from pathlib import Path
+from threading import Thread
+from typing import List
 
 import numpy as np
 import pandas as pd
+from PySide2.QtCore import Signal
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
@@ -12,93 +15,87 @@ from gui.ProgressBar import ProgressBar
 
 
 class SimilarityFinder:
-    def __init__(self, song_dir, progress_bar=None, main=None):
+    def __init__(self, song_list, progress_bar=None, calculations_done_signal=None, similarity_threshold=0.4):
         """Find similarities between songs in a directory
-        :type song_dir: str
-        :param song_dir: Directory containing all song files
+        :type song_list: list[Song]
+        :param song_list: All song files to compare
         :type progress_bar: ProgressBar
         :param progress_bar: The progress bar object tracking the calculation progress
-        :type main: Main.Main
-        :param main: The programs main class, handling callbacks
+        :type calculations_done_signal: Signal
+        :param calculations_done_signal: The signal to emit to when calculations are done
+        :type similarity_threshold: float
+        :param similarity_threshold: The threshold of what counts as "similar"
         """
         # Init parameters
         self._similarities = {}
-        self._loaded_song_dict = {}
         self._songs = pd.DataFrame(columns=['name', 'text'])
-        # similarity threshold
-        self._cosine_threshold = 0.8
         # Get passed parameters
-        self._song_dir = song_dir
-        self._progress_bar = progress_bar
-        self._main = main
+        self._song_list: List[Song] = song_list
+        self._progress_bar: ProgressBar = progress_bar
+        self._calculations_done_signal: Signal = calculations_done_signal
+        self._cosine_threshold: float = similarity_threshold
+
+        # Run calculations
+        finder_thread = Thread(target=self.run, name="Similarity Finder")
+        finder_thread.start()
 
     def run(self):
         """Start the calculations"""
-        self.reload_songs()
-
-        # Notify the user that all songs are loaded
-        if self._main is not None:
-            self._main.song_loading_done.emit()
-
+        # Prepare songs
+        self.__prepare_songs()
         # Do the actual calculations
-        self.collect_similarities()
+        self._collect_similarities()
 
         # Notify the user that all calculations have been done
-        if self._main is not None:
-            self._main.collecting_similarities_done.emit()
+        if self._calculations_done_signal is not None:
+            self._calculations_done_signal.emit()
 
-    def reload_songs(self):
-        """Get all SongBeamer files from the working directory"""
-        # Get all song files in the given directory
-        song_file_list = list(Path(self._song_dir).rglob("*.[[sS][nN][gG]"))
+    def __prepare_songs(self):
+        """Prepare all songs for calculation"""
         # Init parameters
-        count = 0
-        song_dict = {'name': [], 'text': []}
+        song_dict: dict = {'name': [], 'text': []}
         # Get the texts from all songs
-        for song_file in song_file_list:
-            # Parse the song file
-            song = Song(song_file)
-            # Only process valid song files
-            if not song.valid:
-                continue
-            # Save the song for later use
-            self._loaded_song_dict[str(song)] = song
+        for song in self._song_list:
+            song: Song
             song_dict['name'].append(str(song))
             song_dict['text'].append(song.get_text_as_line())
-            count += 1
-        # Prepare all valid songs
+        # Prepare songs with pandas
         self._songs.name = pd.Series(song_dict['name'])
         self._songs.text = pd.Series(song_dict['text'])
 
-    def replace_indices(self, idx):
+    def __replace_indices(self, idx):
         """Replace the indices in all songs
         :type idx: int
         :param idx: Indices to replace"""
         return self._songs['name'].values[idx]
 
-    def collect_similarities(self):
+    def _collect_similarities(self):
         """Calculate the similarities between all loaded songs"""
         # Prepare for calculations
         timer_start = timeit.default_timer()
+        self._similarities = {}
 
         # Transform song vectors
         tfidf = TfidfVectorizer()
         tfidf.fit(self._songs.text)
         tfidf_transform = tfidf.transform(self._songs.text)
 
-        # Subdivide data in batches and process each batch
+        # Subdivide data into batches and process each batch
         batch_size = 2048
         total_batches = math.floor(tfidf_transform.shape[0] / batch_size)
         batch_num = 0
         processing_not_finished = True
-        self._similarities = {}
+
         # Run each bach
         while processing_not_finished:
+            # Check if this is the last batch
             start = batch_num * batch_size
             end = start + batch_size
             if end + 1 >= tfidf_transform.shape[0]:
                 end = tfidf_transform.shape[0] - 1
                 processing_not_finished = False
+
+            # Get cosine similarity between songs
             song_vec = tfidf_transform[start:end]
             similarities = cosine_similarity(tfidf_transform, song_vec) > self._cosine_threshold
             # Only look at lower triangle of matrix
@@ -109,11 +106,13 @@ class SimilarityFinder:
                 indices = np.argwhere(similarities)
                 # Add start value of batch to column ids for correct ids in dataframe
                 indices[:, 1] += batch_num * batch_size
-                names = self.replace_indices(indices)
+                names = self.__replace_indices(indices)
+
                 # Create dict with matching songs
                 for song_tuple in names:
                     song_orig = song_tuple[0]
                     song_copy = song_tuple[1]
+
                     # Add the similarity to the first song
                     if song_orig not in self._similarities:
                         self._similarities[song_orig] = [song_copy]
@@ -135,12 +134,13 @@ class SimilarityFinder:
 
                 # Command line output
                 if self._progress_bar is None:
-                    print(percentage_done_nice, "%")
-                    print('Time: ', time_elapsed, "s")
+                    print(percentage_done_nice, '%')
+                    print('Time: ', time_elapsed, 's - Left:', time_remaining, 's')
                 # Gui progress bar
                 else:
                     self._progress_bar.set_progress.emit(percentage_done_nice, time_elapsed, time_remaining)
             batch_num += 1
+
         # Get final calculation duration
         timer_stop = timeit.default_timer()
         time_elapsed = math.floor(timer_stop - timer_start)
@@ -148,23 +148,12 @@ class SimilarityFinder:
         # Command line output
         if self._progress_bar is None:
             print("100 %")
-            print('Time: ', time_elapsed)
+            print('Time: ', time_elapsed, 's')
         # Gui progress bar
         else:
             self._progress_bar.set_progress.emit(100, time_elapsed, 0)
-            self._progress_bar.close_with_delay()
 
     def get_similarities(self):
         """Get a list of all calculated similarities
         :return list[list[str]]: All calculated similarities"""
         return self._similarities
-
-    def get_loaded_song_dict(self):
-        """All loaded song objects
-        :return dict{str: Song.Song}"""
-        return self._loaded_song_dict
-
-
-if __name__ == "__main__":
-    finder = SimilarityFinder("Songs")
-    finder.run()
