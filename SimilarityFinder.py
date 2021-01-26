@@ -101,7 +101,7 @@ class SimilarityFinder:
             # Only look at lower triangle of matrix
             similarities = np.tril(similarities, -1)
 
-            if 0 > np.sum(similarities):
+            if 0 < np.sum(similarities):
                 # Get song indices of matching songs
                 indices = np.argwhere(similarities)
                 # Add start value of batch to column ids for correct ids in dataframe
