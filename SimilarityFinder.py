@@ -152,7 +152,6 @@ class SimilarityFinder:
         # Gui progress bar
         else:
             self._progress_bar.set_progress.emit(100, time_elapsed, 0)
-            #self._progress_bar.close_with_delay()
 
     def get_similarities(self):
         """Get a list of all calculated similarities
