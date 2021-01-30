@@ -34,7 +34,7 @@ class Song:
             self._read_lines(content)
             # After
             self.valid = True
-        except UnicodeDecodeError:
+        except (UnicodeDecodeError, FileNotFoundError):
             print("Error reading file", song_file)
 
     def _read_lines(self, content):
