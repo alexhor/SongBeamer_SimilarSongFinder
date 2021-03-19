@@ -2,7 +2,7 @@ import sys
 
 from PySide2.QtWidgets import (QApplication)
 
-from gui.MainWindow import MainWindow
+from gui.SimilaritiesWindow import SimilaritiesWindow
 
 
 class Main:
@@ -10,7 +10,7 @@ class Main:
         """Show the main application window"""
         app = QApplication(sys.argv)
         # Open the main window
-        self._main_window = MainWindow()
+        self._main_window = SimilaritiesWindow()
         self._main_window.show()
         # Quit when the user exits the program
         sys.exit(app.exec_())

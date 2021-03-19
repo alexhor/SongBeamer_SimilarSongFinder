@@ -1,13 +1,16 @@
-from typing import List
+import webbrowser
 
-from PySide2.QtWidgets import QMainWindow, QWidget, QHBoxLayout, QListWidget, QScrollArea, QGridLayout, QLabel
-from PySide2.QtCore import Qt
-import xml.etree.ElementTree as xml
+from typing import List
+from functools import partial
+
+from PySide2.QtWidgets import QMainWindow, QWidget, QHBoxLayout, QMessageBox, QScrollArea, QGridLayout, QLabel,\
+    QPushButton
+import xml.etree.ElementTree as Xml
 from difflib import HtmlDiff
 import re
 
 
-class SongDiff(QMainWindow):
+class SongDiffWindow(QMainWindow):
     def __init__(self, song_orig, song_similar):
         """Displays the difference between two songs
         :type song_orig: Song.Song
@@ -53,6 +56,20 @@ class SongDiff(QMainWindow):
         html_diff._table_template = "%(data_rows)s"
         diff_file: str = html_diff.make_file(song_orig_line_str_list, song_similar_line_str_list)
 
+        # Add column header
+        col_num: int
+        for col_num in (1, 3):
+            header_text: str
+            # Original song
+            if 1 == col_num:
+                header_text = self._song_orig.get_name()
+            # Similar song
+            else:
+                header_text = self._song_similar.get_name()
+            label: QLabel = QLabel(header_text)
+            label.setStyleSheet('font-weight: bold')
+            self.centralLayout.addWidget(label, 0, col_num)
+
         # Prepare for xml parse
         diff_file = diff_file.replace('&nbsp;', ' '). \
             replace('<span class="diff_sub">', '{diff sub}'). \
@@ -61,16 +78,17 @@ class SongDiff(QMainWindow):
             replace('</span>', '{/diff}')
 
         # Parse diff file
-        tree: xml = xml.fromstring(diff_file)
+        tree: Xml = Xml.fromstring(diff_file)
         row_count: int = 0
-        column: xml.Element
+        row: Xml.Element
 
-        for column in tree:
+        for row in tree:
             row_count += 1
             cell_count = 0
-            cell: xml.Element
+            cell: Xml.Element
 
-            for cell in column:
+            # Create the actual diff
+            for cell in row:
                 cell_count += 1
                 column_start: int
                 # Original
@@ -94,6 +112,54 @@ class SongDiff(QMainWindow):
                     self.centralLayout.addWidget(QLabel(cell.text), row_count, column_start)
                 else:
                     raise KeyError('Unknown element type')
+        # Add footer
+        row_count += 1
+        for col_num in (1, 3):
+            song: Song
+            # Original song
+            if 1 == col_num:
+                song = self._song_orig
+            # Similar song
+            else:
+                song = self._song_similar
+            # Keep
+            button_keep: QPushButton = QPushButton('Keep "' + song.get_name() + '"')
+            button_keep.clicked.connect(partial(self._keep_song, song))
+            self.centralLayout.addWidget(button_keep, row_count + 0, col_num)
+            # Delete
+            button_delete: QPushButton = QPushButton('Delete "' + song.get_name() + '"')
+            button_delete.clicked.connect(partial(self._delete_song, song))
+            self.centralLayout.addWidget(button_delete, row_count + 1, col_num)
+            # Edit
+            button_edit: QPushButton = QPushButton('Edit "' + song.get_name() + '"')
+            button_edit.clicked.connect(partial(webbrowser.open, str(song)))
+            self.centralLayout.addWidget(button_edit, row_count + 2, col_num)
+        row_count += 3
+        button: QPushButton = QPushButton('Keep both')
+        self.centralLayout.addWidget(button, row_count, 1)
+
+    def _keep_song(self, song):
+        """Select the given song to keep
+        :type song: Song
+        :param song: The song to keep
+        """
+        pass
+
+    def _delete_song(self, song, force=False):
+        """Delete the given song
+        :type song: Song
+        :param song: The song to delete
+        :type force: bool
+        :param force: Force the deleting of the song
+        """
+        # Double check before deleting
+        if not force:
+            reply: int = QMessageBox.question(self, 'Delete song', 'Do you really want to delete the song "' +
+                                              song.get_name() + '"?', QMessageBox.Yes, QMessageBox.No)
+            if QMessageBox.Yes != reply:
+                return
+        # Delete the actual file
+        # TODO: Implement
 
     @staticmethod
     def _parse_xml_cell(text):
@@ -106,7 +172,7 @@ class SongDiff(QMainWindow):
         if None is text:
             return return_widget
         # Parse text
-        text_as_list: List[tuple[str, str]] = SongDiff.__extract_diff_tag(text)
+        text_as_list: List[tuple[str, str]] = SongDiffWindow.__extract_diff_tag(text)
         # Convert to gui
         layout = QHBoxLayout(return_widget)
         layout.setSpacing(0)
@@ -114,7 +180,6 @@ class SongDiff(QMainWindow):
         for part in text_as_list:
             if 'default' == part[0]:
                 change_widget = QLabel(part[1])
-                change_widget.setStyleSheet('background-color: gray')
                 layout.addWidget(change_widget)
             elif 'sub' == part[0]:
                 change_widget = QLabel(part[1])
@@ -175,8 +240,8 @@ if __name__ == '__main__':
     from Song import Song
     from pathlib import Path
 
-    song_diff: SongDiff = SongDiff(Song(Path("D:\\Git\\SongBeamer_SimilarSongFinder\\Songs\\95 Krasse Thesen.sng")),
-                                   Song(Path("D:\\Git\\SongBeamer_SimilarSongFinder\\Songs\\99 Luftballons.sng")))
+    song_diff: SongDiffWindow = SongDiffWindow(Song(Path("D:\\Git\\SongBeamer_SimilarSongFinder\\Songs\\95 Krasse Thesen.sng")),
+                                               Song(Path("D:\\Git\\SongBeamer_SimilarSongFinder\\Songs\\99 Luftballons.sng")))
     song_diff.show()
     # Quit when the user exits the program
     sys.exit(app.exec_())

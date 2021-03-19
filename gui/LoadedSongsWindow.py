@@ -1,13 +1,15 @@
+import sys
 from typing import List
 
-from PySide2.QtWidgets import (QWidget, QPushButton, QMainWindow, QAction, QScrollArea, QVBoxLayout)
+from PySide2.QtWidgets import (QWidget, QPushButton, QMainWindow, QAction, QScrollArea, QVBoxLayout, QApplication)
 
 from Song import Song
 from gui.LoadSongsDialog import LoadSongsDialog
-from gui.SongDetails import SongDetails
+from gui.ProgressBar import ProgressBar
+from gui.SongDetailsDialog import SongDetailsDialog
 
 
-class LoadedSongsOverview(QMainWindow):
+class LoadedSongsWindow(QMainWindow):
     def __init__(self):
         """Show and modify the list of all loaded songs"""
         super().__init__()
@@ -28,7 +30,8 @@ class LoadedSongsOverview(QMainWindow):
         # Setup parameters
         self._song_list: List[Song] = []
         self._song_gui_list: dict[Song: QWidget] = {}
-        self._load_songs_dialog = LoadSongsDialog(self)
+        self._progress_bar = ProgressBar()
+        self._load_songs_dialog = LoadSongsDialog(self, self._progress_bar)
 
         # Setup gui
         self._create_menu_bar()
@@ -48,9 +51,14 @@ class LoadedSongsOverview(QMainWindow):
             self._load_song_dir_action,
         ])
 
+        # Status bar
+        self._status_bar = self.statusBar()
+
     def do_load_songs_gui_action(self):
         """Show a popup dialog to select songs to load"""
+        self._status_bar.addPermanentWidget(self._progress_bar)
         song_list = self._load_songs_dialog.get_songs_by_file()
+        self._progress_bar.set_progress()
         self.add_song_list(song_list)
 
     def do_load_song_dir_gui_action(self):
@@ -83,7 +91,7 @@ class LoadedSongsOverview(QMainWindow):
         """Show a songs details
         :type song: Song
         :param song: The song to show the details about"""
-        details_gui = SongDetails(song, self, self.remove_song)
+        details_gui = SongDetailsDialog(song, self, self.remove_song)
         details_gui.show()
 
     def remove_song(self, song):
@@ -105,3 +113,10 @@ class LoadedSongsOverview(QMainWindow):
         """Get a list of all loaded songs
         :return List[Song]: The list of all loaded songs"""
         return self._song_list
+
+
+if __name__ == '__main__':
+    app = QApplication()
+    window = LoadedSongsWindow()
+    window.show()
+    sys.exit(app.exec_())

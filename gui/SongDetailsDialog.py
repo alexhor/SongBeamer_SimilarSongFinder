@@ -4,7 +4,7 @@ from PySide2.QtWidgets import QWidget, QDialog, QPushButton, QVBoxLayout, QLabel
 from Song import Song
 
 
-class SongDetails(QDialog):
+class SongDetailsDialog(QDialog):
     def __init__(self, song: Song, parent, remove_callback=None):
         """Show a popup with a songs details
         :type song: Song

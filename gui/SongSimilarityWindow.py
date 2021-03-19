@@ -3,10 +3,10 @@ from typing import List
 from PySide2.QtWidgets import (QLabel, QPushButton, QHBoxLayout, QWidget, QMainWindow, QScrollArea, QVBoxLayout)
 
 from Song import Song
-from gui.SongDiff import SongDiff
+from gui.SongDiffWindow import SongDiffWindow
 
 
-class SongSimilarity(QMainWindow):
+class SongSimilarityWindow(QMainWindow):
     def __init__(self, song_orig, song_similarity_list):
         """Display all songs similar to one song
         :type song_orig: Song
@@ -17,7 +17,7 @@ class SongSimilarity(QMainWindow):
         self._song_orig: Song = song_orig
         self._song_similarity_list: List[Song] = song_similarity_list
         self._similar_song_gui_list: dict[Song, QWidget] = {}
-        self._song_diff_gui_list: List[SongDiff] = []
+        self._song_diff_gui_list: List[SongDiffWindow] = []
 
         # Main layout
         self.resize(450, 600)
@@ -45,7 +45,7 @@ class SongSimilarity(QMainWindow):
         :type similar_song: Song.Song
         :param similar_song: The song to diff the original song against
         """
-        diff_gui = SongDiff(self._song_orig, similar_song)
+        diff_gui = SongDiffWindow(self._song_orig, similar_song)
         diff_gui.show()
         diff_gui.activateWindow()
         self._song_diff_gui_list.append(diff_gui)

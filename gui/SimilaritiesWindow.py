@@ -7,12 +7,12 @@ from PySide2.QtWidgets import (QWidget, QVBoxLayout, QScrollArea, QMainWindow,
 
 from SimilarityFinder import SimilarityFinder
 from Song import Song
-from gui.LoadedSongsOverview import LoadedSongsOverview
+from gui.LoadedSongsWindow import LoadedSongsWindow
 from gui.ProgressBar import ProgressBar
-from gui.SongSimilarity import SongSimilarity
+from gui.SongSimilarityWindow import SongSimilarityWindow
 
 
-class MainWindow(QMainWindow):
+class SimilaritiesWindow(QMainWindow):
     # Incoming progress updates
     _calculating_similarities_done: Signal = Signal()
 
@@ -22,7 +22,7 @@ class MainWindow(QMainWindow):
 
         # Setup parameters
         self._similarity_finder: SimilarityFinder
-        self._song_similarity_gui_list: List[SongSimilarity] = []
+        self._song_similarity_gui_list: List[SongSimilarityWindow] = []
         self._song_gui_list: dict[Song, QPushButton] = {}
 
         # Setup signal callbacks
@@ -45,7 +45,7 @@ class MainWindow(QMainWindow):
         self._create_menu_bar()
 
         # Show the page with all loaded songs on startup
-        self._loaded_songs_window = LoadedSongsOverview()
+        self._loaded_songs_window = LoadedSongsWindow()
         self._do_show_loaded_songs_gui_action()
 
     def _do_calculating_similarities_done(self):
@@ -74,8 +74,9 @@ class MainWindow(QMainWindow):
         # Add all songs to gui
         for song in similarities.keys():
             song: Song
-            button: QPushButton = QPushButton(song.get_name(), self)
-            button.clicked.connect(partial(self._show_similar_songs, song, similarities[song]))
+            similar_songs: list = similarities[song]
+            button: QPushButton = QPushButton(song.get_name() + ' (' + str(len(similar_songs)) + ')', self)
+            button.clicked.connect(partial(self._show_similar_songs, song, similar_songs))
             self.centralLayout.addWidget(button)
             self._song_gui_list[song] = button
 
@@ -85,7 +86,7 @@ class MainWindow(QMainWindow):
         :param song: The main song
         :type similar_song_list: list[Song.Song]
         :param similar_song_list: The list of similar songs"""
-        song_similarity_gui: SongSimilarity = SongSimilarity(song, similar_song_list)
+        song_similarity_gui: SongSimilarityWindow = SongSimilarityWindow(song, similar_song_list)
         song_similarity_gui.show()
         song_similarity_gui.activateWindow()
         self._song_similarity_gui_list.append(song_similarity_gui)
@@ -124,7 +125,7 @@ class MainWindow(QMainWindow):
         # Close any other open windows first
         self._loaded_songs_window.close()
         for window in self._song_similarity_gui_list:
-            window: LoadedSongsOverview
+            window: LoadedSongsWindow
             window.close()
         # Now close this one
         super().closeEvent(event)

@@ -1,18 +1,24 @@
+import math
+import timeit
 from pathlib import Path
 
 from PySide2.QtCore import Qt
 from PySide2.QtWidgets import QWidget, QFileDialog
 
 from Song import Song
+from gui.ProgressBar import ProgressBar
 
 
 class LoadSongsDialog(QFileDialog):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, progress_bar=None):
         """Show a popup with a songs details
         :type parent: QWidget
-        :param parent: Parent widget"""
+        :param parent: Parent widget
+        :type progress_bar: ProgressBar
+        :param progress_bar: The progress bar object tracking the loading progress"""
         # Setup dialog
         super().__init__(parent, 'SongBeamer Files', filter='SongBeamer Files (*.sng)')
+        self._progress_bar: ProgressBar = progress_bar
         #self.setWindowModality(Qt.ApplicationModal)
 
     def get_songs_by_dir(self):
@@ -38,15 +44,19 @@ class LoadSongsDialog(QFileDialog):
         song_file_list = self.selectedFiles()
         return self._load_song_file_list(song_file_list)
 
-    @staticmethod
-    def _load_song_file_list(song_file_list):
+    def _load_song_file_list(self, song_file_list):
         """Load song objects for the given list of song files
         :type song_file_list: List[str | Path]
         :param song_file_list: The list of song files to load
         :return List[Song]: The list of loaded song objects"""
         song_object_list = []
         song_file: str
+        song_count: int = len(song_file_list)
+        songs_loaded: int = 0
+        timer_start = timeit.default_timer()
+
         for song_file in song_file_list:
+            songs_loaded += 1
             # Convert the song file to a path object if necessary
             if type(song_file) == str:
                 song_path = Path(song_file)
@@ -58,5 +68,18 @@ class LoadSongsDialog(QFileDialog):
             if not song.valid:
                 continue
             song_object_list.append(song)
+
+            # Calculate progress
+            percentage_done = songs_loaded / song_count
+            percentage_done_nice = round(percentage_done * 100, 2)
+            time_elapsed = math.floor(timeit.default_timer() - timer_start)
+            time_remaining = math.floor(time_elapsed / percentage_done) - time_elapsed
+            # Command line output
+            if self._progress_bar is None:
+                print(percentage_done_nice, '%')
+                print('Time: ', time_elapsed, 's - Left:', time_remaining, 's')
+            # Gui progress bar
+            else:
+                self._progress_bar.set_progress.emit(percentage_done_nice, time_elapsed, time_remaining)
         # Return collected song objects
         return song_object_list
