@@ -102,31 +102,50 @@ class Song:
 
     def get_line_list(self):
         """Get the list of all song lines
-        :return list[SongLine]: The song line list"""
+        :return list[SongLine]: The song line list
+        :raises ReferenceError"""
+        if not self.valid:
+            raise ReferenceError('Song is not valid')
         return self._song_line_list
 
     def get_text(self):
         """Get the songs text as a multiline text
-        :return str: The songs text as multiline"""
+        :return str: The songs text as multiline
+        :raises ReferenceError"""
+        if not self.valid:
+            raise ReferenceError('Song is not valid')
         return '\n'.join(str(line) for line in self._song_line_list)
 
     def get_text_as_line(self):
         """Get the songs text as one line
-        :return str: The songs text as one line"""
+        :return str: The songs text as one line
+        :raises ReferenceError"""
+        if not self.valid:
+            raise ReferenceError('Song is not valid')
         return ' '.join(str(line) for line in self._song_line_list)
 
     def get_name(self):
         """Get the songs name
-        :return str: The songs name"""
+        :return str: The songs name
+        :raises ReferenceError"""
+        if not self.valid:
+            raise ReferenceError('Song is not valid')
         return self._song_file.name
 
     def __repr__(self):
+        if not self.valid:
+            raise ReferenceError('Song is not valid')
         return str(self._song_file)
 
     def __hash__(self):
+        if not self.valid:
+            raise ReferenceError('Song is not valid')
         return self.id
 
     def __eq__(self, other_song):
+        # Only valid songs can be compared
+        if not self.valid:
+            return False
         # Compare to other song object
         if type(other_song) == Song:
             other_song: Song
@@ -138,3 +157,9 @@ class Song:
         # Default
         else:
             return False
+
+    def unload(self):
+        """Unload this song from the program"""
+        self.valid = False
+        self._song_file = ''
+        self._song_line_list = []

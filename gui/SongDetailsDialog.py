@@ -26,16 +26,16 @@ class SongDetailsDialog(QDialog):
         # Remove action
         if remove_callback is not None:
             remove_button = QPushButton("Remove", self)
-            remove_button.clicked.connect(lambda: self._remove_button_clicked())
+            remove_button.clicked.connect(self._remove_button_clicked)
             self.layout.addWidget(remove_button)
         # Song text
         label = QLabel(song.get_text(), self)
         self.layout.addWidget(label)
 
-    def _remove_button_clicked(self):
+    def _remove_button_clicked(self, a):
         """Handle that the remove button was clicked"""
         # Call the passed callback if any
         if self._remove_callback is not None:
             self.close()
             self.deleteLater()
-            self._remove_callback(self._song)
+            self._remove_callback()

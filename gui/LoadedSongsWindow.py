@@ -5,6 +5,8 @@ from PySide2.QtWidgets import (QWidget, QPushButton, QMainWindow, QAction, QScro
 
 from Song import Song
 from gui.LoadSongsDialog import LoadSongsDialog
+from gui.OrderableListItem import LoadedSongListItem
+from gui.OrderableListWidget import OrderableListWidget
 from gui.ProgressBar import ProgressBar
 from gui.SongDetailsDialog import SongDetailsDialog
 
@@ -17,15 +19,8 @@ class LoadedSongsWindow(QMainWindow):
         # Main layout
         self.resize(450, 600)
         self.setWindowTitle("Loaded Songs")
-        self.scrollableWrapper = QScrollArea()
-        self.setCentralWidget(self.scrollableWrapper)
-
-        self.centralLayout = QVBoxLayout()
-        self.centralWidget = QWidget()
-        self.centralWidget.setLayout(self.centralLayout)
-
-        self.scrollableWrapper.setWidget(self.centralWidget)
-        self.scrollableWrapper.setWidgetResizable(True)
+        self._list_widget = OrderableListWidget()
+        self.setCentralWidget(self._list_widget)
 
         # Setup parameters
         self._song_list: List[Song] = []
@@ -82,17 +77,9 @@ class LoadedSongsWindow(QMainWindow):
         if song not in self._song_list:
             self._song_list.append(song)
             # Add to gui
-            button = QPushButton(song.get_name(), self)
-            button.clicked.connect(lambda: self._show_song_details(song))
-            self.centralLayout.addWidget(button)
-            self._song_gui_list[song] = button
-
-    def _show_song_details(self, song):
-        """Show a songs details
-        :type song: Song
-        :param song: The song to show the details about"""
-        details_gui = SongDetailsDialog(song, self, self.remove_song)
-        details_gui.show()
+            list_item: LoadedSongListItem = LoadedSongListItem(song)
+            self._list_widget.add(list_item)
+            self._song_gui_list[song] = list_item
 
     def remove_song(self, song):
         """Remove a song from the list
@@ -105,9 +92,9 @@ class LoadedSongsWindow(QMainWindow):
         except ValueError:
             return
         # Remove from gui
-        song_widget: QWidget = self._song_gui_list[song]
+        list_item: LoadedSongListItem = self._song_gui_list[song]
         self._song_gui_list.pop(song)
-        song_widget.deleteLater()
+        self._list_widget.delete_item(list_item)
 
     def get_loaded_song_list(self):
         """Get a list of all loaded songs
