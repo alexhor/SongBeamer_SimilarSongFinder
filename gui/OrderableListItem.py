@@ -1,3 +1,5 @@
+from abc import abstractmethod
+
 from PySide2.QtWidgets import QWidget, QPushButton, QVBoxLayout, QLayout, QLayoutItem
 from enum import Enum
 
@@ -49,6 +51,12 @@ class OrderableListItem(QWidget):
         # Delete the item itself
         self.deleteLater()
 
+    @abstractmethod
+    def get_order_string(self):
+        """Get the string that this item can be ordered by
+        :returns str: The string to order this item by"""
+        return ""
+
 
 class LoadedSongListItem(OrderableListItem):
     """The loaded song"""
@@ -77,3 +85,8 @@ class LoadedSongListItem(OrderableListItem):
         """Remove this song from the list"""
         self.delete()
         del self._song
+
+    def get_order_string(self):
+        """Get the song title this item is ordered by
+        :returns str: The song title this item is ordered by"""
+        return self._song.get_name().lower()
