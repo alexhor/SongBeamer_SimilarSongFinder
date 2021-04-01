@@ -68,6 +68,8 @@ class ProgressBar(QWidget):
         :param percentage_done: How much progress has been made
         :return float, float: Time elapsed, Time remaining"""
         time_elapsed = math.floor(timeit.default_timer() - self._timer_start)
+        if 0 == percentage_done:
+            percentage_done = 1
         time_remaining = math.floor(time_elapsed / percentage_done) - time_elapsed
         return time_elapsed, time_remaining
 
