@@ -1,10 +1,11 @@
+import re
 from pathlib import Path
 
 from SongLine import SongLine
-import re
+from Subscribable import Subscribable
 
 
-class Song:
+class Song(Subscribable):
     supported_verse_heading_list = ["Unbekannt", "Unbenannt", "Unknown",
                                     "Intro", "Vers", "Verse", "Strophe",
                                     "Pre-Bridge", "Bridge", "Misc",
@@ -13,7 +14,10 @@ class Song:
                                     "Instrumental", "Interlude", "Coda",
                                     "Ending", "Outro", "Teil", "Part", "Chor",
                                     "Solo"]
-    # To uniquely identify each song
+    """Available subscription types"""
+    DELETED = 1
+    UPDATED = 2
+    """Id to uniquely identify each song"""
     next_id = 0
 
     def __init__(self, song_file):
@@ -23,6 +27,8 @@ class Song:
         # Set unique id
         self.id = self.next_id
         Song.next_id += 1
+        # Register subscriptions
+        super().__init__((self.DELETED, self.UPDATED))
         # Setup song
         self.valid = False
         self._song_file = song_file
@@ -36,6 +42,10 @@ class Song:
             self.valid = True
         except (UnicodeDecodeError, FileNotFoundError):
             print("Error reading file", song_file)
+
+    def __del__(self):
+        """Unload this song from the program"""
+        self._trigger_subscriptions(self.DELETED, song=self)
 
     def _read_lines(self, content):
         """Parse the given song file content into valid song lines
@@ -157,9 +167,3 @@ class Song:
         # Default
         else:
             return False
-
-    def unload(self):
-        """Unload this song from the program"""
-        self.valid = False
-        self._song_file = ''
-        self._song_line_list = []
