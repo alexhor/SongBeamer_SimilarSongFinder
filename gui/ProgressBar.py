@@ -8,7 +8,7 @@ from time import sleep
 
 class ProgressBar(QWidget):
     # Incoming progress updates
-    set_progress = Signal(int, int, int)
+    set_progress = Signal(int)
 
     def __init__(self, show_time=True):
         """Opens a progress bar widget
@@ -45,17 +45,11 @@ class ProgressBar(QWidget):
         """Start the internal timer"""
         self._timer_start = timeit.default_timer()
 
-    def _set_progress(self, percentage_done, time_elapsed=None, time_remaining=None):
+    def _set_progress(self, percentage_done):
         """Handle incoming progress updates
         :type percentage_done: int
         :param percentage_done: The progress to set, from 0 to 100
-        :type time_elapsed: int
-        :param time_elapsed: Deprecated
-        :type time_remaining: int
-        :param time_remaining: Deprecated
         """
-        if None is not time_elapsed or None is not time_remaining:
-            DeprecationWarning("Use ProgressBar.startTimer() instead")
         self._progress_bar.setValue(percentage_done)
         if self._show_time:
             time_elapsed, time_remaining = self._get_progress_times(percentage_done)

@@ -11,7 +11,7 @@ from gui.SongDetailsDialog import SongDetailsDialog
 class OrderableListItem(QWidget, Subscribable):
     """Available subscription types"""
     DELETED = 1
-    CHANGED = 2
+    UPDATED = 2
     """Registered subscription callbacks"""
     _subscriptions: dict[int, list[callable]]
     """The widgets layout"""
@@ -23,7 +23,7 @@ class OrderableListItem(QWidget, Subscribable):
         # Init QWidget
         super().__init__()
         # Init Subscribable
-        Subscribable.__init__(self, (OrderableListItem.DELETED, OrderableListItem.CHANGED))
+        Subscribable.__init__(self, (OrderableListItem.DELETED, OrderableListItem.UPDATED))
         self._layout = QVBoxLayout()
         self.setLayout(self._layout)
         # Set and increase id
@@ -61,11 +61,28 @@ class LoadedSongListItem(OrderableListItem):
         :param song:
         """
         super().__init__()
+        # Add song
         self._song = song
+        self._song.subscribe(Song.DELETED, self.delete)
+        self._song.subscribe(Song.UPDATED, self._song_updated)
+        # Build gui
         self._button = QPushButton(self._song.get_name(), self)
         self._button.clicked.connect(self._show_details_dialog)
         self._layout.addWidget(self._button)
         self._layout.addWidget(self._button)
+
+    def _song_updated(self, song):
+        """A song was updated"""
+        if song == self._song:
+            self._trigger_subscriptions(OrderableListItem.UPDATED, item=self)
+
+    def delete(self, song=None):
+        """Delete this item
+        :type song: Song
+        :param song: This parameter is passed, when the delete call is coming directly from a song
+        """
+        if None is song or song == self._song:
+            super().delete()
 
     def _show_details_dialog(self):
         """Show the songs details"""
@@ -73,9 +90,8 @@ class LoadedSongListItem(OrderableListItem):
         details_gui.show()
 
     def remove_song(self):
-        """Remove this song from the list"""
-        self.delete()
-        del self._song
+        """Remove this song from the program"""
+        self._song.unload()
 
     def get_order_string(self):
         """Get the song title this item is ordered by

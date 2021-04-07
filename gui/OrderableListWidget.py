@@ -63,8 +63,8 @@ class OrderableListWidget(QScrollArea):
         :param list_item: The item to add
         """
         # Subscribe to changes
-        list_item.subscribe(OrderableListItem.DELETED, self.delete_item)
-        list_item.subscribe(OrderableListItem.CHANGED, self.item_updated)
+        list_item.subscribe(OrderableListItem.DELETED, self._item_deleted)
+        list_item.subscribe(OrderableListItem.UPDATED, self._item_updated)
         # Make sure to add the item only once
         if list_item not in self._item_list:
             list_item_inserted = False
@@ -81,30 +81,8 @@ class OrderableListWidget(QScrollArea):
                     break
             if not list_item_inserted:
                 self._layout.addWidget(list_item)
-        """
-        #index = self._layout.indexOf(list_item)
-        # Make sure to add the item only once
-        if True:
-            # Subscribe to changes
-            #list_item.subscribe(OrderableListItem.DELETED, self.delete_item)
-            #list_item.subscribe(OrderableListItem.CHANGED, self.item_updated)
-            # Find the correct position to put this element in
-            list_item_inserted = False
-            for i in range(self._layout.count()):
-                existing_item = self._layout.takeAt(i).widget()
-                # The list_item should go right here
-                if -1 == self._get_order(existing_item, list_item):
-                    i = self._layout.indexOf(existing_item)
-                    #self._layout.insertWidget(i, list_item)
-                    self._layout.addWidget(list_item)
-                    list_item_inserted = True
-                    break
-            # If the list_item wasn't added yet, add it to the end
-            if not list_item_inserted:
-                self._layout.addWidget(list_item)
-        """
 
-    def delete_item(self, item):
+    def _item_deleted(self, item):
         """Delete an item from the list
         :type item: OrderableListItem
         :param item: The item to delete
@@ -117,7 +95,7 @@ class OrderableListWidget(QScrollArea):
         # Delete the item
         self._item_list.pop(i)
 
-    def item_updated(self, item):
+    def _item_updated(self, item):
         """Update the list with the items new information
         :type item: OrderableListItem
         :param item: The item that was updated

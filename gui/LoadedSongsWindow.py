@@ -1,4 +1,5 @@
 import sys
+from math import floor
 from typing import List
 
 from PySide2.QtWidgets import (QWidget, QPushButton, QMainWindow, QAction, QScrollArea, QVBoxLayout, QApplication)
@@ -36,6 +37,7 @@ class LoadedSongsWindow(QMainWindow):
 
         # Setup gui
         self._create_menu_bar()
+        self._status_bar.addPermanentWidget(self._progress_bar)
 
     def _create_menu_bar(self):
         """Build the windows menu bar"""
@@ -57,9 +59,7 @@ class LoadedSongsWindow(QMainWindow):
 
     def _do_load_songs_gui_action(self):
         """Show a popup dialog to select songs to load"""
-        self._status_bar.addPermanentWidget(self._progress_bar)
         song_list = self._load_songs_dialog.get_songs_by_file()
-        self._progress_bar.set_progress()
         self._add_song_list(song_list)
 
     def _do_load_song_dir_gui_action(self):
@@ -71,9 +71,17 @@ class LoadedSongsWindow(QMainWindow):
         """Add a list of new songs to the list
         :type song_list: list[Song]
         :param song_list: The list of songs to add"""
+        # Setup parameters
         song: Song
+        total_song_count: int = len(song_list)
+        song_num: int = 0
+        self._progress_bar.startTimer()
+        # Load songs
         for song in song_list:
             self._song_list.add(song)
+            song_num += 1
+            percentage_done = floor(song_num / total_song_count * 100)
+            self._progress_bar.set_progress.emit(percentage_done)
 
     def _song_added(self, song):
         """Add a new song was added to the list

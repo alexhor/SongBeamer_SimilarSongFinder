@@ -1,8 +1,5 @@
-import math
-import timeit
 from pathlib import Path
 
-from PySide2.QtCore import Qt
 from PySide2.QtWidgets import QWidget, QFileDialog
 
 from Song import Song
@@ -53,7 +50,6 @@ class LoadSongsDialog(QFileDialog):
         song_file: str
         song_count: int = len(song_file_list)
         songs_loaded: int = 0
-        timer_start = timeit.default_timer()
 
         for song_file in song_file_list:
             songs_loaded += 1
@@ -72,14 +68,11 @@ class LoadSongsDialog(QFileDialog):
             # Calculate progress
             percentage_done = songs_loaded / song_count
             percentage_done_nice = round(percentage_done * 100, 2)
-            time_elapsed = math.floor(timeit.default_timer() - timer_start)
-            time_remaining = math.floor(time_elapsed / percentage_done) - time_elapsed
             # Command line output
             if self._progress_bar is None:
                 print(percentage_done_nice, '%')
-                print('Time: ', time_elapsed, 's - Left:', time_remaining, 's')
             # Gui progress bar
             else:
-                self._progress_bar.set_progress.emit(percentage_done_nice, time_elapsed, time_remaining)
+                self._progress_bar.set_progress.emit(percentage_done_nice)
         # Return collected song objects
         return song_object_list

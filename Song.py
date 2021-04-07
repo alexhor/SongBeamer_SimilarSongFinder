@@ -43,9 +43,15 @@ class Song(Subscribable):
         except (UnicodeDecodeError, FileNotFoundError):
             print("Error reading file", song_file)
 
-    def __del__(self):
+    def unload(self):
         """Unload this song from the program"""
+        # Trigger subscriptions
         self._trigger_subscriptions(self.DELETED, song=self)
+        # Unload this song
+        self.valid = False
+        self._song_line_list = []
+        self._song_file = Path()
+        self.id = -1
 
     def _read_lines(self, content):
         """Parse the given song file content into valid song lines
