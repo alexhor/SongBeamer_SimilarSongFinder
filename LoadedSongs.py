@@ -28,7 +28,7 @@ class LoadedSongs(Subscribable):
             song.subscribe(song.DELETED, self._song_deleted)
             song.subscribe(song.UPDATED, self._song_updated)
             # Trigger own subscriptions
-            self._trigger_subscriptions(self.ADDED)
+            self._trigger_subscriptions(self.ADDED, song=song)
 
     @staticmethod
     def _get_song_key(song):

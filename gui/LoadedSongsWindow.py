@@ -3,6 +3,7 @@ from typing import List
 
 from PySide2.QtWidgets import (QWidget, QPushButton, QMainWindow, QAction, QScrollArea, QVBoxLayout, QApplication)
 
+from LoadedSongs import LoadedSongs
 from Song import Song
 from gui.LoadSongsDialog import LoadSongsDialog
 from gui.OrderableListItem import LoadedSongListItem
@@ -12,8 +13,10 @@ from gui.SongDetailsDialog import SongDetailsDialog
 
 
 class LoadedSongsWindow(QMainWindow):
-    def __init__(self):
-        """Show and modify the list of all loaded songs"""
+    def __init__(self, loaded_songs_list):
+        """Show and modify the list of all loaded songs
+        :type loaded_songs_list: LoadedSongs
+        :param loaded_songs_list: All currently loaded songs"""
         super().__init__()
 
         # Main layout
@@ -23,7 +26,10 @@ class LoadedSongsWindow(QMainWindow):
         self.setCentralWidget(self._list_widget)
 
         # Setup parameters
-        self._song_list: List[Song] = []
+        self._song_list: LoadedSongs = loaded_songs_list
+        self._song_list.subscribe(LoadedSongs.ADDED, self.song_added)
+        self._song_list.subscribe(LoadedSongs.DELETED, self.song_deleted)
+        self._song_list.subscribe(LoadedSongs.UPDATED, self.song_updated)
         self._song_gui_list: dict[Song: QWidget] = {}
         self._progress_bar = ProgressBar()
         self._load_songs_dialog = LoadSongsDialog(self, self._progress_bar)
@@ -67,43 +73,36 @@ class LoadedSongsWindow(QMainWindow):
         :param song_list: The list of songs to add"""
         song: Song
         for song in song_list:
-            self.add_song(song)
+            self._song_list.add(song)
 
-    def add_song(self, song):
-        """Add a new song to the list
+    def song_added(self, song):
+        """Add a new song was added to the list
         :type song: Song
-        :param song: The song to add"""
-        # Only add mew songs
-        if song not in self._song_list:
-            self._song_list.append(song)
-            # Add to gui
-            list_item: LoadedSongListItem = LoadedSongListItem(song)
-            self._list_widget.add(list_item)
-            self._song_gui_list[song] = list_item
+        :param song: The song that was added"""
+        # Add to gui
+        list_item: LoadedSongListItem = LoadedSongListItem(song)
+        self._list_widget.add(list_item)
+        self._song_gui_list[song] = list_item
 
-    def remove_song(self, song):
-        """Remove a song from the list
+    def song_deleted(self, song):
+        """A song was deleted from the list
         :type song: Song
-        :param song: The song to remove"""
-        # Remove from list
-        try:
-            self._song_list.remove(song)
-        # Song doesn't exist anymore
-        except ValueError:
-            return
+        :param song: The song that was deleted"""
         # Remove from gui
         list_item: LoadedSongListItem = self._song_gui_list[song]
         self._song_gui_list.pop(song)
         self._list_widget.delete_item(list_item)
 
-    def get_loaded_song_list(self):
-        """Get a list of all loaded songs
-        :return List[Song]: The list of all loaded songs"""
-        return self._song_list
+    def song_updated(self, song):
+        """A songs info was updated
+        :type song: Song
+        :param song: The songs whose info was updated"""
+        raise NotImplementedError()
 
 
 if __name__ == '__main__':
     app = QApplication()
-    window = LoadedSongsWindow()
+    loaded_songs = LoadedSongs()
+    window = LoadedSongsWindow(loaded_songs)
     window.show()
     sys.exit(app.exec_())

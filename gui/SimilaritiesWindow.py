@@ -5,6 +5,7 @@ from PySide2.QtCore import Signal
 from PySide2.QtWidgets import (QWidget, QVBoxLayout, QScrollArea, QMainWindow,
                                QAction, QPushButton)
 
+from LoadedSongs import LoadedSongs
 from SimilarityFinder import SimilarityFinder
 from Song import Song
 from gui.LoadedSongsWindow import LoadedSongsWindow
@@ -13,8 +14,10 @@ from gui.SongSimilarityWindow import SongSimilarityWindow
 
 
 class SimilaritiesWindow(QMainWindow):
-    # Incoming progress updates
+    """Incoming progress updates"""
     _calculating_similarities_done: Signal = Signal()
+    """All loaded songs"""
+    _loaded_song_list: LoadedSongs
 
     def __init__(self):
         """The main window displaying all song similarities"""
@@ -24,6 +27,7 @@ class SimilaritiesWindow(QMainWindow):
         self._similarity_finder: SimilarityFinder
         self._song_similarity_gui_list: List[SongSimilarityWindow] = []
         self._song_gui_list: dict[Song, QPushButton] = {}
+        self._loaded_song_list = LoadedSongs()
 
         # Setup signal callbacks
         self._calculating_similarities_done.connect(self._do_calculating_similarities_done)
@@ -45,7 +49,7 @@ class SimilaritiesWindow(QMainWindow):
         self._create_menu_bar()
 
         # Show the page with all loaded songs on startup
-        self._loaded_songs_window = LoadedSongsWindow()
+        self._loaded_songs_window = LoadedSongsWindow(self._loaded_song_list)
         self._do_show_loaded_songs_gui_action()
 
     def _do_calculating_similarities_done(self):
@@ -114,9 +118,9 @@ class SimilaritiesWindow(QMainWindow):
     def _do_find_similarities_gui_action(self):
         """Calculate the similarities between all currently loaded songs and display them"""
         progress_bar = ProgressBar()
-        loaded_song_list = self._loaded_songs_window.get_loaded_song_list()
         self.setCentralWidget(progress_bar)
-        self._similarity_finder = SimilarityFinder(loaded_song_list, progress_bar, self._calculating_similarities_done)
+        self._similarity_finder = SimilarityFinder(self._loaded_song_list, progress_bar,
+                                                   self._calculating_similarities_done)
 
     def closeEvent(self, event):
         """Handle close event
