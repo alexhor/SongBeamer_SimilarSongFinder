@@ -1,4 +1,5 @@
 from PySide2.QtCore import Signal
+from six import itervalues
 
 from Song import Song
 from Subscribable import Subscribable
@@ -17,6 +18,11 @@ class LoadedSongs(Subscribable):
         super().__init__((self.DELETED, self.UPDATED, self.ADDED))
         self._loadedSongs = {}
         self.songAdded = Signal(Song)
+
+    def __iter__(self):
+        """Iterate over all currently loaded songs
+        :return Iterator: All currently loaded songs"""
+        return self._loadedSongs.values().__iter__()
 
     def add(self, song):
         """Add a new song

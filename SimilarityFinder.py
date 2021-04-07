@@ -10,6 +10,7 @@ from PySide2.QtCore import Signal
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
+from LoadedSongs import LoadedSongs
 from Song import Song
 from gui.ProgressBar import ProgressBar
 
@@ -17,8 +18,8 @@ from gui.ProgressBar import ProgressBar
 class SimilarityFinder:
     def __init__(self, song_list, progress_bar=None, calculations_done_signal=None, similarity_threshold=0.4):
         """Find similarities between songs in a directory
-        :type song_list: list[Song]
-        :param song_list: All song files to compare
+        :type song_list: LoadedSongs
+        :param song_list: All songs to compare
         :type progress_bar: ProgressBar
         :param progress_bar: The progress bar object tracking the calculation progress
         :type calculations_done_signal: Signal
@@ -31,7 +32,7 @@ class SimilarityFinder:
         self._song_lookup = {}
         self._songs = pd.DataFrame(columns=['name', 'text'])
         # Get passed parameters
-        self._song_list: List[Song] = song_list
+        self._song_list: LoadedSongs = song_list
         self._progress_bar: ProgressBar = progress_bar
         self._calculations_done_signal: Signal = calculations_done_signal
         self._cosine_threshold: float = similarity_threshold
@@ -56,8 +57,8 @@ class SimilarityFinder:
         # Init parameters
         song_dict: dict = {'name': [], 'text': []}
         # Get the texts from all songs
+        song: Song
         for song in self._song_list:
-            song: Song
             song_dict['name'].append(str(song))
             song_dict['text'].append(song.get_text_as_line())
             self._song_lookup[str(song)] = song
@@ -74,7 +75,6 @@ class SimilarityFinder:
     def _collect_similarities(self):
         """Calculate the similarities between all loaded songs"""
         # Prepare for calculations
-        timer_start = timeit.default_timer()
         self._similarities = {}
 
         # Transform song vectors
@@ -131,29 +131,21 @@ class SimilarityFinder:
                 # Calculate progress
                 percentage_done = (batch_num + 1) / total_batches
                 percentage_done_nice = round(percentage_done * 100, 2)
-                time_elapsed = math.floor(timeit.default_timer() - timer_start)
-                time_remaining = math.floor(time_elapsed / percentage_done) - time_elapsed
 
                 # Command line output
                 if self._progress_bar is None:
                     print(percentage_done_nice, '%')
-                    print('Time: ', time_elapsed, 's - Left:', time_remaining, 's')
                 # Gui progress bar
                 else:
-                    self._progress_bar.set_progress.emit(percentage_done_nice, time_elapsed, time_remaining)
+                    self._progress_bar.set_progress.emit(percentage_done_nice)
             batch_num += 1
-
-        # Get final calculation duration
-        timer_stop = timeit.default_timer()
-        time_elapsed = math.floor(timer_stop - timer_start)
 
         # Command line output
         if self._progress_bar is None:
             print("100 %")
-            print('Time: ', time_elapsed, 's')
         # Gui progress bar
         else:
-            self._progress_bar.set_progress.emit(100, time_elapsed, 0)
+            self._progress_bar.set_progress.emit(100)
 
     def get_similarities(self):
         """Get a list of all calculated similarities
