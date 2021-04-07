@@ -9,6 +9,8 @@ from LoadedSongs import LoadedSongs
 from SimilarityFinder import SimilarityFinder
 from Song import Song
 from gui.LoadedSongsWindow import LoadedSongsWindow
+from gui.OrderableListItem import SongSimilarityListItem
+from gui.OrderableListWidget import OrderableListWidget
 from gui.ProgressBar import ProgressBar
 from gui.SongSimilarityWindow import SongSimilarityWindow
 
@@ -18,6 +20,8 @@ class SimilaritiesWindow(QMainWindow):
     _calculating_similarities_done: Signal = Signal()
     """All loaded songs"""
     _loaded_song_list: LoadedSongs
+    """Central widget"""
+    centralWidget: OrderableListWidget
 
     def __init__(self):
         """The main window displaying all song similarities"""
@@ -32,21 +36,11 @@ class SimilaritiesWindow(QMainWindow):
         # Setup signal callbacks
         self._calculating_similarities_done.connect(self._do_calculating_similarities_done)
 
-        # Main layout
+        # Setup gui
         self.resize(450, 600)
         self.setWindowTitle("SongBeamer Song Similarity Finder")
-        self.scrollableWrapper = QScrollArea()
-        self.setCentralWidget(self.scrollableWrapper)
-
-        self.centralLayout = QVBoxLayout()
-        self.centralWidget = QWidget()
-        self.centralWidget.setLayout(self.centralLayout)
-
-        self.scrollableWrapper.setWidget(self.centralWidget)
-        self.scrollableWrapper.setWidgetResizable(True)
-
-        # Setup gui
         self._create_menu_bar()
+        self._build_similarities_gui({})
 
         # Show the page with all loaded songs on startup
         self._loaded_songs_window = LoadedSongsWindow(self._loaded_song_list)
@@ -65,35 +59,16 @@ class SimilaritiesWindow(QMainWindow):
         """Build a gui for a list of similarities
         :type similarities: dict[Song, list[Song]"""
         # Setup gui
-        self.scrollableWrapper = QScrollArea()
-        self.setCentralWidget(self.scrollableWrapper)
-
-        self.centralLayout = QVBoxLayout()
-        self.centralWidget = QWidget()
-        self.centralWidget.setLayout(self.centralLayout)
-
-        self.scrollableWrapper.setWidget(self.centralWidget)
-        self.scrollableWrapper.setWidgetResizable(True)
+        self.centralWidget = OrderableListWidget()
+        self.setCentralWidget(self.centralWidget)
 
         # Add all songs to gui
+        song: Song
         for song in similarities.keys():
-            song: Song
             similar_songs: list = similarities[song]
-            button: QPushButton = QPushButton(song.get_name() + ' (' + str(len(similar_songs)) + ')', self)
-            button.clicked.connect(partial(self._show_similar_songs, song, similar_songs))
-            self.centralLayout.addWidget(button)
-            self._song_gui_list[song] = button
-
-    def _show_similar_songs(self, song, similar_song_list):
-        """Show all a songs similarities
-        :type song: Song.Song
-        :param song: The main song
-        :type similar_song_list: list[Song.Song]
-        :param similar_song_list: The list of similar songs"""
-        song_similarity_gui: SongSimilarityWindow = SongSimilarityWindow(song, similar_song_list)
-        song_similarity_gui.show()
-        song_similarity_gui.activateWindow()
-        self._song_similarity_gui_list.append(song_similarity_gui)
+            song_similarity_list_item: SongSimilarityListItem = SongSimilarityListItem(song, similar_songs)
+            self._song_gui_list[song] = song_similarity_list_item
+            self.centralWidget.add(song_similarity_list_item)
 
     def _create_menu_bar(self):
         """Build the windows menu bar"""

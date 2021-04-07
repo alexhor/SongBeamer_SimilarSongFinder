@@ -1,4 +1,5 @@
 from abc import abstractmethod
+from typing import List
 
 from PySide2.QtWidgets import QWidget, QPushButton, QVBoxLayout, QLayout, QLayoutItem
 from enum import Enum
@@ -6,6 +7,7 @@ from enum import Enum
 from Song import Song
 from Subscribable import Subscribable
 from gui.SongDetailsDialog import SongDetailsDialog
+from gui.SongSimilarityWindow import SongSimilarityWindow
 
 
 class OrderableListItem(QWidget, Subscribable):
@@ -58,7 +60,7 @@ class LoadedSongListItem(OrderableListItem):
     def __init__(self, song):
         """Init gui
         :type song: Song
-        :param song:
+        :param song: The loaded song
         """
         super().__init__()
         # Add song
@@ -88,6 +90,63 @@ class LoadedSongListItem(OrderableListItem):
         """Show the songs details"""
         details_gui = SongDetailsDialog(self._song, self, self.remove_song)
         details_gui.show()
+
+    def remove_song(self):
+        """Remove this song from the program"""
+        self._song.unload()
+
+    def get_order_string(self):
+        """Get the song title this item is ordered by
+        :returns str: The song title this item is ordered by"""
+        return self._song.get_name().lower()
+
+
+class SongSimilarityListItem(OrderableListItem):
+    """The original song"""
+    _song: Song
+    """All similar songs"""
+    _similar_songs_list: List[Song]
+    """The button opening the similarity details"""
+    _button: QPushButton
+
+    def __init__(self, song, similar_songs_list):
+        """Init gui
+        :type song: Song
+        :param song: The original song
+        :type similar_songs_list: List[Song]
+        :param similar_songs_list: All songs similar to the original one
+        """
+        super().__init__()
+        # Add song
+        self._song = song
+        self._song.subscribe(Song.DELETED, self.delete)
+        self._song.subscribe(Song.UPDATED, self._song_updated)
+        # Add similar songs
+        self._similar_songs_list = similar_songs_list
+        # Build gui
+        self._button = QPushButton(self._song.get_name() + '(' + str(len(self._similar_songs_list)) + ')', self)
+        self._button.clicked.connect(self._show_details_dialog)
+        self._layout.addWidget(self._button)
+        self._layout.addWidget(self._button)
+
+    def _song_updated(self, song):
+        """A song was updated"""
+        if song == self._song:
+            self._trigger_subscriptions(OrderableListItem.UPDATED, item=self)
+
+    def delete(self, song=None):
+        """Delete this item
+        :type song: Song
+        :param song: This parameter is passed, when the delete call is coming directly from a song
+        """
+        if None is song or song == self._song:
+            super().delete()
+
+    def _show_details_dialog(self):
+        """Show the similarity details"""
+        song_similarity_gui: SongSimilarityWindow = SongSimilarityWindow(self._song, self._similar_songs_list)
+        song_similarity_gui.show()
+        song_similarity_gui.activateWindow()
 
     def remove_song(self):
         """Remove this song from the program"""
