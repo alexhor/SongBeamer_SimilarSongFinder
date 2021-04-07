@@ -4,10 +4,11 @@ from PySide2.QtWidgets import QWidget, QPushButton, QVBoxLayout, QLayout, QLayou
 from enum import Enum
 
 from Song import Song
+from Subscribable import Subscribable
 from gui.SongDetailsDialog import SongDetailsDialog
 
 
-class OrderableListItem(QWidget):
+class OrderableListItem(QWidget, Subscribable):
     """Available subscription types"""
     DELETED = 1
     CHANGED = 2
@@ -19,30 +20,20 @@ class OrderableListItem(QWidget):
     id = 0
 
     def __init__(self):
+        # Init QWidget
         super().__init__()
+        # Init Subscribable
+        Subscribable.__init__(self, (OrderableListItem.DELETED, OrderableListItem.CHANGED))
         self._layout = QVBoxLayout()
         self.setLayout(self._layout)
         # Set and increase id
         self.id = OrderableListItem.id
         OrderableListItem.id += 1
-        # Setup subscriptions
-        self._subscriptions = {1: [], 2: []}
-
-    def subscribe(self, subscription_type, callback):
-        """Register a new subscription
-        :type subscription_type: int
-        :param subscription_type: The type of subscription
-        :type callback: callable
-        :param callback: The callback to register for the subscription
-        """
-        if subscription_type in self._subscriptions.keys():
-            self._subscriptions[subscription_type].append(callback)
 
     def delete(self):
         """Delete this item"""
         # Perform deletion subscriptions
-        for callback in self._subscriptions[OrderableListItem.DELETED]:
-            callback(self)
+        self._trigger_subscriptions(OrderableListItem.DELETED, item=self)
         # Delete all children
         while self._layout.count():
             child: QLayoutItem = self._layout.takeAt(0)
