@@ -27,9 +27,9 @@ class LoadedSongsWindow(QMainWindow):
 
         # Setup parameters
         self._song_list: LoadedSongs = loaded_songs_list
-        self._song_list.subscribe(LoadedSongs.ADDED, self.song_added)
-        self._song_list.subscribe(LoadedSongs.DELETED, self.song_deleted)
-        self._song_list.subscribe(LoadedSongs.UPDATED, self.song_updated)
+        self._song_list.subscribe(LoadedSongs.ADDED, self._song_added)
+        self._song_list.subscribe(LoadedSongs.DELETED, self._song_deleted)
+        self._song_list.subscribe(LoadedSongs.UPDATED, self._song_updated)
         self._song_gui_list: dict[Song: QWidget] = {}
         self._progress_bar = ProgressBar()
         self._load_songs_dialog = LoadSongsDialog(self, self._progress_bar)
@@ -42,9 +42,9 @@ class LoadedSongsWindow(QMainWindow):
         menu_bar = self.menuBar()
         # Load songs action
         self._load_songs_action: QAction = QAction("&Load Files", self)
-        self._load_songs_action.triggered.connect(self.do_load_songs_gui_action)
+        self._load_songs_action.triggered.connect(self._do_load_songs_gui_action)
         self._load_song_dir_action: QAction = QAction("Load &Directory", self)
-        self._load_song_dir_action.triggered.connect(self.do_load_song_dir_gui_action)
+        self._load_song_dir_action.triggered.connect(self._do_load_song_dir_gui_action)
         # Song menu
         songs_menu = menu_bar.addMenu("&Songs")
         songs_menu.addActions([
@@ -55,19 +55,19 @@ class LoadedSongsWindow(QMainWindow):
         # Status bar
         self._status_bar = self.statusBar()
 
-    def do_load_songs_gui_action(self):
+    def _do_load_songs_gui_action(self):
         """Show a popup dialog to select songs to load"""
         self._status_bar.addPermanentWidget(self._progress_bar)
         song_list = self._load_songs_dialog.get_songs_by_file()
         self._progress_bar.set_progress()
-        self.add_song_list(song_list)
+        self._add_song_list(song_list)
 
-    def do_load_song_dir_gui_action(self):
+    def _do_load_song_dir_gui_action(self):
         """Show a popup dialog to select songs to load"""
         song_list = self._load_songs_dialog.get_songs_by_dir()
-        self.add_song_list(song_list)
+        self._add_song_list(song_list)
 
-    def add_song_list(self, song_list):
+    def _add_song_list(self, song_list):
         """Add a list of new songs to the list
         :type song_list: list[Song]
         :param song_list: The list of songs to add"""
@@ -75,7 +75,7 @@ class LoadedSongsWindow(QMainWindow):
         for song in song_list:
             self._song_list.add(song)
 
-    def song_added(self, song):
+    def _song_added(self, song):
         """Add a new song was added to the list
         :type song: Song
         :param song: The song that was added"""
@@ -84,7 +84,7 @@ class LoadedSongsWindow(QMainWindow):
         self._list_widget.add(list_item)
         self._song_gui_list[song] = list_item
 
-    def song_deleted(self, song):
+    def _song_deleted(self, song):
         """A song was deleted from the list
         :type song: Song
         :param song: The song that was deleted"""
@@ -93,7 +93,7 @@ class LoadedSongsWindow(QMainWindow):
         self._song_gui_list.pop(song)
         self._list_widget.delete_item(list_item)
 
-    def song_updated(self, song):
+    def _song_updated(self, song):
         """A songs info was updated
         :type song: Song
         :param song: The songs whose info was updated"""
