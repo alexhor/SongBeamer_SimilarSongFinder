@@ -1,8 +1,6 @@
 import math
-import timeit
-from pathlib import Path
 from threading import Thread
-from typing import List
+import networkx as nx
 
 import numpy as np
 import pandas as pd
@@ -90,6 +88,8 @@ class SimilarityFinder:
         batch_num = 0
         processing_not_finished = True
 
+        collected_similarities = {}
+
         # Run each bach
         while processing_not_finished:
             # Check if this is the last batch
@@ -124,42 +124,7 @@ class SimilarityFinder:
                     song_orig = self._song_lookup[song_tuple[0]]
                     song_copy = self._song_lookup[song_tuple[1]]
 
-                    # Add the similarity to the first song
-                    if song_orig not in self._similarities:
-                        self._similarities[song_orig] = [{
-                            'song': song_copy,
-                            'score': similarity_score
-                        }]
-                    else:
-                        similar_songs_list: list = self._similarities[song_orig]
-                        song_exists: bool = False
-                        for song_dict in similar_songs_list:
-                            if song_dict['song'] == song_copy:
-                                song_exists = True
-                                break
-                        if not song_exists:
-                            similar_songs_list.append({
-                                'song': song_copy,
-                                'score': similarity_score
-                            })
-                    # Add the similarity to the second song
-                    if song_copy not in self._similarities:
-                        self._similarities[song_copy] = [{
-                            'song': song_orig,
-                            'score': similarity_score
-                        }]
-                    else:
-                        similar_songs_list: list = self._similarities[song_copy]
-                        song_exists: bool = False
-                        for song_dict in similar_songs_list:
-                            if song_dict['song'] == song_orig:
-                                song_exists = True
-                                break
-                        if not song_exists:
-                            similar_songs_list.append({
-                                'song': song_orig,
-                                'score': similarity_score
-                            })
+                    collected_similarities[(song_orig, song_copy)] = similarity_score
 
             # Update progress if not finished
             if processing_not_finished:
@@ -175,6 +140,11 @@ class SimilarityFinder:
                     self._progress_bar.set_progress.emit(percentage_done_nice)
             batch_num += 1
 
+        # Store similarities
+        groups = self._get_similarity_groups(collected_similarities)
+        self._similarities = groups
+        self._similarity_scores = collected_similarities
+
         # Command line output
         if self._progress_bar is None:
             print("100 %")
@@ -182,7 +152,19 @@ class SimilarityFinder:
         else:
             self._progress_bar.set_progress.emit(100)
 
+    @staticmethod
+    def _get_similarity_groups(similarity_pairs_list):
+        """Get all grouped similarities
+        :type similarity_pairs_list: dict[tuple[Song], int]
+        :param similarity_pairs_list: All similarity pairs with songs as indexes
+        :return list[list[Song]]: All similarity groups with songs as indexes"""
+        graph = nx.Graph()
+        graph.add_edges_from(similarity_pairs_list.keys())
+        cliques = nx.find_cliques(graph)
+        groups = list(cliques)
+        return groups
+
     def get_similarities(self):
         """Get a list of all calculated similarities
-        :return dict[Song, list[dict[str, Song]]]: All calculated similarities"""
-        return self._similarities
+        :return list[list[Song]], dict[tuple[Song], int]: All calculated similarities"""
+        return self._similarities, self._similarity_scores

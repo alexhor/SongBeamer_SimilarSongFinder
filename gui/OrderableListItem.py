@@ -105,26 +105,22 @@ class SongSimilarityListItem(OrderableListItem):
     """The original song"""
     _song: Song
     """All similar songs"""
-    _similar_songs_list: List[dict[str, Song]]
+    _similar_songs_list: List[Song]
     """The button opening the similarity details"""
     _button: QPushButton
 
-    def __init__(self, song, similar_songs_list):
+    def __init__(self, similar_songs_list):
         """Init gui
-        :type song: Song
-        :param song: The original song
-        :type similar_songs_list: List[dict[str, Song]]
-        :param similar_songs_list: All songs similar to the original one
+        :type similar_songs_list: List[Song]
+        :param similar_songs_list: A group of songs that are similar
         """
         super().__init__()
-        # Add song
-        self._song = song
-        self._song.subscribe(Song.DELETED, self.delete)
-        self._song.subscribe(Song.UPDATED, self._song_updated)
         # Add similar songs
         self._similar_songs_list = similar_songs_list
+        # TODO: Subscribe to song changes
         # Build gui
-        self._button = QPushButton(self._song.get_name() + '(' + str(len(self._similar_songs_list)) + ')', self)
+        self._button = QPushButton(self._similar_songs_list[0].get_name() + '(' + str(len(self._similar_songs_list))
+                                   + ')', self)
         self._button.clicked.connect(self._show_details_dialog)
         self._layout.addWidget(self._button)
         self._layout.addWidget(self._button)
@@ -144,9 +140,10 @@ class SongSimilarityListItem(OrderableListItem):
 
     def _show_details_dialog(self):
         """Show the similarity details"""
-        song_similarity_gui: SongSimilarityWindow = SongSimilarityWindow(self._song, self._similar_songs_list)
-        song_similarity_gui.show()
-        song_similarity_gui.activateWindow()
+        #song_similarity_gui: SongSimilarityWindow = SongSimilarityWindow(self._song, self._similar_songs_list)
+        #song_similarity_gui.show()
+        #song_similarity_gui.activateWindow()
+        pass
 
     def remove_song(self):
         """Remove this song from the program"""
@@ -155,4 +152,4 @@ class SongSimilarityListItem(OrderableListItem):
     def get_order_string(self):
         """Get the song title this item is ordered by
         :returns str: The song title this item is ordered by"""
-        return self._song.get_name().lower()
+        return self._similar_songs_list[0].get_name().lower()

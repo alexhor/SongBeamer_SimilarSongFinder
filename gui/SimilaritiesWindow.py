@@ -41,7 +41,7 @@ class SimilaritiesWindow(QMainWindow):
         self.resize(450, 600)
         self.setWindowTitle("SongBeamer Song Similarity Finder")
         self._create_menu_bar()
-        self._build_similarities_gui({})
+        self._build_similarities_gui([], {})
 
         # Show the page with all loaded songs on startup
         self._loaded_songs_window = LoadedSongsWindow(self._loaded_song_list)
@@ -52,13 +52,14 @@ class SimilaritiesWindow(QMainWindow):
         if self._similarity_finder is None:
             return
         # Get the calculated similarities
-        similarities = self._similarity_finder.get_similarities()
+        similarities, similarity_scores = self._similarity_finder.get_similarities()
         # Display them
-        self._build_similarities_gui(similarities)
+        self._build_similarities_gui(similarities, similarity_scores)
 
-    def _build_similarities_gui(self, similarities):
+    def _build_similarities_gui(self, similarities, similarity_scores):
         """Build a gui for a list of similarities
-        :type similarities: dict[Song, list[dict[str, Song]]]"""
+        :type similarities: list[list[Song]]
+        :type similarity_scores: dict[tuple[Song], int]"""
         # Setup gui
         self.centralWidget = OrderableListWidget()
         self.setCentralWidget(self.centralWidget)
@@ -67,9 +68,9 @@ class SimilaritiesWindow(QMainWindow):
         song: Song
         similar_songs: list
         song_num: int = 0
-        for song, similar_songs in similarities.items():
-            song_similarity_list_item: SongSimilarityListItem = SongSimilarityListItem(song, similar_songs)
-            self._song_gui_list[song] = song_similarity_list_item
+        for similarity_group in similarities:
+            song_similarity_list_item: SongSimilarityListItem = SongSimilarityListItem(similarity_group)
+            #self._song_gui_list[song] = song_similarity_list_item
             self.centralWidget.add(song_similarity_list_item)
             song_num += 1
             # Take a break here and there to let the gui catch up
