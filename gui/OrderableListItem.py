@@ -105,7 +105,7 @@ class SongSimilarityListItem(OrderableListItem):
     """The original song"""
     _song: Song
     """All similar songs"""
-    _similar_songs_list: List[Song]
+    _similar_songs_list: List[dict[str, Song]]
     """The button opening the similarity details"""
     _button: QPushButton
 
@@ -113,7 +113,7 @@ class SongSimilarityListItem(OrderableListItem):
         """Init gui
         :type song: Song
         :param song: The original song
-        :type similar_songs_list: List[Song]
+        :type similar_songs_list: List[dict[str, Song]]
         :param similar_songs_list: All songs similar to the original one
         """
         super().__init__()

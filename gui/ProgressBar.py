@@ -25,7 +25,7 @@ class ProgressBar(QWidget):
         # The progress bar itself
         self._progress_bar = QProgressBar(self)
         self._progress_bar.setMaximum(100)
-        self._progress_bar.setGeometry(0, 0, 300, 25)
+        self._progress_bar.setGeometry(0, 0, 350, 25)
         self._progress_bar.setValue(0)
         self._layout.addWidget(self._progress_bar)
         # Setup time display

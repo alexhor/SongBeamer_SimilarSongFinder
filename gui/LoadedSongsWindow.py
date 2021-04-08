@@ -1,7 +1,9 @@
 import sys
 from math import floor
+from threading import Thread
 from typing import List
 
+from PySide2.QtCore import Signal
 from PySide2.QtWidgets import (QWidget, QPushButton, QMainWindow, QAction, QScrollArea, QVBoxLayout, QApplication)
 
 from LoadedSongs import LoadedSongs
@@ -35,6 +37,8 @@ class LoadedSongsWindow(QMainWindow):
         self._progress_bar = ProgressBar()
         self._load_songs_dialog = LoadSongsDialog(self, self._progress_bar)
 
+        self._signal_song_added.connect(self._song_added_function)
+
         # Setup gui
         self._create_menu_bar()
         self._status_bar.addPermanentWidget(self._progress_bar)
@@ -60,12 +64,14 @@ class LoadedSongsWindow(QMainWindow):
     def _do_load_songs_gui_action(self):
         """Show a popup dialog to select songs to load"""
         song_list = self._load_songs_dialog.get_songs_by_file()
-        self._add_song_list(song_list)
+        thread: Thread = Thread(target=self._add_song_list, args=(song_list,))
+        thread.start()
 
     def _do_load_song_dir_gui_action(self):
         """Show a popup dialog to select songs to load"""
         song_list = self._load_songs_dialog.get_songs_by_dir()
-        self._add_song_list(song_list)
+        thread: Thread = Thread(target=self._add_song_list, args=(song_list,))
+        thread.start()
 
     def _add_song_list(self, song_list):
         """Add a list of new songs to the list
@@ -84,6 +90,11 @@ class LoadedSongsWindow(QMainWindow):
             self._progress_bar.set_progress.emit(percentage_done)
 
     def _song_added(self, song):
+        self._signal_song_added.emit(song)
+
+    _signal_song_added: Signal = Signal(Song)
+
+    def _song_added_function(self, song):
         """Add a new song was added to the list
         :type song: Song
         :param song: The song that was added"""

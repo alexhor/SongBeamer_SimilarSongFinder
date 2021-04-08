@@ -57,15 +57,15 @@ class SimilaritiesWindow(QMainWindow):
 
     def _build_similarities_gui(self, similarities):
         """Build a gui for a list of similarities
-        :type similarities: dict[Song, list[Song]"""
+        :type similarities: dict[Song, list[dict[str, Song]]]"""
         # Setup gui
         self.centralWidget = OrderableListWidget()
         self.setCentralWidget(self.centralWidget)
 
         # Add all songs to gui
         song: Song
-        for song in similarities.keys():
-            similar_songs: list = similarities[song]
+        similar_songs: list
+        for song, similar_songs in similarities.items():
             song_similarity_list_item: SongSimilarityListItem = SongSimilarityListItem(song, similar_songs)
             self._song_gui_list[song] = song_similarity_list_item
             self.centralWidget.add(song_similarity_list_item)

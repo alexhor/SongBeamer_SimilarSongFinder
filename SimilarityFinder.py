@@ -16,7 +16,7 @@ from gui.ProgressBar import ProgressBar
 
 
 class SimilarityFinder:
-    def __init__(self, song_list, progress_bar=None, calculations_done_signal=None, similarity_threshold=0.4):
+    def __init__(self, song_list, progress_bar=None, calculations_done_signal=None, similarity_threshold=0.95):
         """Find similarities between songs in a directory
         :type song_list: LoadedSongs
         :param song_list: All songs to compare
@@ -99,32 +99,51 @@ class SimilarityFinder:
 
             # Get cosine similarity between songs
             song_vec = tfidf_transform[start:end]
-            similarities = cosine_similarity(tfidf_transform, song_vec) > self._cosine_threshold
+            similarities = cosine_similarity(tfidf_transform, song_vec)
             # Only look at lower triangle of matrix
             similarities = np.tril(similarities, -1)
 
             if 0 < np.sum(similarities):
                 # Get song indices of matching songs
-                indices = np.argwhere(similarities)
+                indices = np.argwhere(similarities > self._cosine_threshold)
+
                 # Add start value of batch to column ids for correct ids in dataframe
-                indices[:, 1] += batch_num * batch_size
-                names = self.__replace_indices(indices)
+                names = indices.copy()
+                names[:, 1] += batch_num * batch_size
+                names = self.__replace_indices(names)
 
                 # Create dict with matching songs
-                for song_tuple in names:
-                    song_orig = song_tuple[0]
-                    song_copy = song_tuple[1]
+                for i in range(len(names)):
+                    song_tuple = names[i]
+                    score_index = indices[i]
+                    similarity_score = similarities[score_index[0]][score_index[1]]
+                    if not 0.999 > similarity_score:
+                        continue
+                    song_orig = self._song_lookup[song_tuple[0]]
+                    song_copy = self._song_lookup[song_tuple[1]]
 
                     # Add the similarity to the first song
                     if song_orig not in self._similarities:
-                        self._similarities[song_orig] = [song_copy]
+                        self._similarities[song_orig] = [{
+                            'song': song_copy,
+                            'score': similarity_score
+                        }]
                     else:
-                        self._similarities[song_orig].append(song_copy)
+                        self._similarities[song_orig].append({
+                            'song': song_copy,
+                            'score': similarity_score
+                        })
                     # Add the similarity to the second song
                     if song_copy not in self._similarities:
-                        self._similarities[song_copy] = [song_orig]
+                        self._similarities[song_copy] = [{
+                            'song': song_orig,
+                            'score': similarity_score
+                        }]
                     else:
-                        self._similarities[song_copy].append(song_orig)
+                        self._similarities[song_copy].append({
+                            'song': song_orig,
+                            'score': similarity_score
+                        })
 
             # Update progress if not finished
             if processing_not_finished:
@@ -149,14 +168,5 @@ class SimilarityFinder:
 
     def get_similarities(self):
         """Get a list of all calculated similarities
-        :return dict[Song, list[Song]]: All calculated similarities"""
-        # Get the corresponding objects to the calculated similarities
-        similarities = {}
-        for key, similar_song_list in self._similarities.items():
-            # Get all similar songs
-            song_list = []
-            for similar_song in similar_song_list:
-                song_list.append(self._song_lookup[similar_song])
-            # Add the song and its similarities
-            similarities[self._song_lookup[key]] = song_list
-        return similarities
+        :return dict[Song, list[dict[str, Song]]]: All calculated similarities"""
+        return self._similarities
