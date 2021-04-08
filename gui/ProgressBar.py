@@ -1,7 +1,7 @@
 import math
 import timeit
 
-from PySide6.QtWidgets import (QLabel, QProgressBar, QHBoxLayout, QWidget, QVBoxLayout)
+from PySide6.QtWidgets import (QLabel, QProgressBar, QHBoxLayout, QWidget, QVBoxLayout, QSizePolicy)
 from PySide6.QtCore import Signal
 from time import sleep
 
@@ -20,6 +20,7 @@ class ProgressBar(QWidget):
         self._timer_start: float = 0
 
         # General layout
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         self._layout = QVBoxLayout()
         self.setLayout(self._layout)
         # The progress bar itself
@@ -31,7 +32,9 @@ class ProgressBar(QWidget):
         # Setup time display
         self._time_wrapper = QHBoxLayout()
         self._time_expired_label = QLabel("")
+        self._time_expired_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         self._time_left_label = QLabel("")
+        self._time_left_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         self._time_wrapper.addWidget(self._time_expired_label)
         self._time_wrapper.addWidget(self._time_left_label)
         self._layout.addLayout(self._time_wrapper)
@@ -64,7 +67,7 @@ class ProgressBar(QWidget):
         time_elapsed = math.floor(timeit.default_timer() - self._timer_start)
         if 0 == percentage_done:
             percentage_done = 1
-        time_remaining = math.floor(time_elapsed / percentage_done) - time_elapsed
+        time_remaining = math.floor(time_elapsed * (100 / percentage_done)) - time_elapsed
         return time_elapsed, time_remaining
 
     def close_with_delay(self):

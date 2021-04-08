@@ -43,6 +43,8 @@ class SimilarityFinder:
 
     def run(self):
         """Start the calculations"""
+        if None is not self._progress_bar:
+            self._progress_bar.startTimer()
         # Prepare songs
         self.__prepare_songs()
         # Do the actual calculations

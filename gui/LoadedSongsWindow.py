@@ -82,13 +82,18 @@ class LoadedSongsWindow(QMainWindow):
         song: Song
         total_song_count: int = len(song_list)
         song_num: int = 0
+        prev_percentage_done: float = 0
         self._progress_bar.startTimer()
+        self._progress_bar.set_progress.emit(prev_percentage_done)
         # Load songs
         for song in song_list:
             self._song_list.add(song)
             song_num += 1
             percentage_done = floor(song_num / total_song_count * 100)
-            self._progress_bar.set_progress.emit(percentage_done)
+            if prev_percentage_done != percentage_done:
+                prev_percentage_done = percentage_done
+                self._progress_bar.set_progress.emit(percentage_done)
+        self._progress_bar.set_progress.emit(100)
 
     def _song_added(self, song):
         self._signal_song_added.emit(song)

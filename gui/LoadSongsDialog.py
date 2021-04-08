@@ -50,6 +50,8 @@ class LoadSongsDialog(QFileDialog):
         song_file: str
         song_count: int = len(song_file_list)
         songs_loaded: int = 0
+        prev_percentage_done: float = 0
+        self._progress_bar.set_progress.emit(prev_percentage_done)
 
         for song_file in song_file_list:
             songs_loaded += 1
@@ -66,13 +68,16 @@ class LoadSongsDialog(QFileDialog):
             song_object_list.append(song)
 
             # Calculate progress
-            percentage_done = songs_loaded / song_count
-            percentage_done_nice = round(percentage_done * 100, 2)
-            # Command line output
-            if self._progress_bar is None:
-                print(percentage_done_nice, '%')
-            # Gui progress bar
-            else:
-                self._progress_bar.set_progress.emit(percentage_done_nice)
+            percentage_done: float = songs_loaded / song_count
+            percentage_done_nice: float = round(percentage_done * 100, 2)
+            if prev_percentage_done != percentage_done_nice:
+                prev_percentage_done = percentage_done_nice
+                # Command line output
+                if self._progress_bar is None:
+                    print(percentage_done_nice, '%')
+                # Gui progress bar
+                else:
+                    self._progress_bar.set_progress.emit(percentage_done_nice)
+        self._progress_bar.set_progress.emit(100)
         # Return collected song objects
         return song_object_list
