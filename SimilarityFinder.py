@@ -6,7 +6,7 @@ from typing import List
 
 import numpy as np
 import pandas as pd
-from PySide2.QtCore import Signal
+from PySide6.QtCore import Signal
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 

@@ -1,7 +1,7 @@
 from abc import abstractmethod
 from typing import List
 
-from PySide2.QtWidgets import QWidget, QPushButton, QVBoxLayout, QLayout, QLayoutItem
+from PySide6.QtWidgets import QWidget, QPushButton, QVBoxLayout, QLayout, QLayoutItem
 from enum import Enum
 
 from Song import Song

@@ -1,6 +1,6 @@
 from typing import List
 
-from PySide2.QtWidgets import (QLabel, QPushButton, QHBoxLayout, QWidget, QMainWindow, QScrollArea, QVBoxLayout)
+from PySide6.QtWidgets import (QLabel, QPushButton, QHBoxLayout, QWidget, QMainWindow, QScrollArea, QVBoxLayout)
 
 from Song import Song
 from gui.SongDiffWindow import SongDiffWindow

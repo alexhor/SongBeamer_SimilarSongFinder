@@ -3,8 +3,9 @@ from math import floor
 from threading import Thread
 from typing import List
 
-from PySide2.QtCore import Signal
-from PySide2.QtWidgets import (QWidget, QPushButton, QMainWindow, QAction, QScrollArea, QVBoxLayout, QApplication)
+from PySide6.QtCore import Signal
+from PySide6.QtGui import QAction
+from PySide6.QtWidgets import (QWidget, QPushButton, QMainWindow, QScrollArea, QVBoxLayout, QApplication)
 
 from LoadedSongs import LoadedSongs
 from Song import Song

@@ -1,5 +1,5 @@
-from PySide2.QtCore import Qt
-from PySide2.QtWidgets import QWidget, QDialog, QPushButton, QVBoxLayout, QLabel
+from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QWidget, QDialog, QPushButton, QVBoxLayout, QLabel
 
 from Song import Song
 

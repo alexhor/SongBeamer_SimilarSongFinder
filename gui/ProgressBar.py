@@ -1,8 +1,8 @@
 import math
 import timeit
 
-from PySide2.QtWidgets import (QLabel, QProgressBar, QHBoxLayout, QWidget, QVBoxLayout)
-from PySide2.QtCore import Signal
+from PySide6.QtWidgets import (QLabel, QProgressBar, QHBoxLayout, QWidget, QVBoxLayout)
+from PySide6.QtCore import Signal
 from time import sleep
 
 

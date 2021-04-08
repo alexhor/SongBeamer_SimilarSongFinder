@@ -1,9 +1,9 @@
 from functools import partial
 from typing import List
 
-from PySide2.QtCore import Signal
-from PySide2.QtWidgets import (QWidget, QVBoxLayout, QScrollArea, QMainWindow,
-                               QAction, QPushButton)
+from PySide6.QtCore import Signal
+from PySide6.QtGui import QAction
+from PySide6.QtWidgets import (QWidget, QVBoxLayout, QScrollArea, QMainWindow, QPushButton)
 
 from LoadedSongs import LoadedSongs
 from SimilarityFinder import SimilarityFinder

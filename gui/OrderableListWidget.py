@@ -1,5 +1,5 @@
-from PySide2.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLayout, QScrollArea, QWidgetItem
-from PySide2.QtCore import Qt
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLayout, QScrollArea, QWidgetItem
+from PySide6.QtCore import Qt
 
 from gui.OrderableListItem import OrderableListItem
 
@@ -15,8 +15,7 @@ class OrderableListWidget(QScrollArea):
     _order_factor: int
 
     def __init__(self, order_asc=True, orientation_horizontal=False):
-        """
-        Init gui
+        """Init gui
         :type order_asc: bool
         :param order_asc: Whether to order the list ascending
         :type orientation_horizontal: bool
@@ -45,7 +44,6 @@ class OrderableListWidget(QScrollArea):
         :param list_item_a: The first item to compare
         :type list_item_b: OrderableListItem
         :param list_item_b: The second item to compare
-
         :returns -1|0|1: list_item_a is: before, same, after list_item_b"""
         str_a: str = list_item_a.get_order_string()
         str_b: str = list_item_b.get_order_string()
@@ -69,7 +67,6 @@ class OrderableListWidget(QScrollArea):
         if list_item not in self._item_list:
             list_item_inserted = False
             self._item_list.append(list_item)
-            song_start_letter = list_item.get_order_string()[:1].lower()
 
             # Walk all existing items
             for i in range(self._layout.count()):

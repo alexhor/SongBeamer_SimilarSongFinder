@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from PySide2.QtWidgets import QWidget, QFileDialog
+from PySide6.QtWidgets import QWidget, QFileDialog
 
 from Song import Song
 from gui.ProgressBar import ProgressBar
@@ -21,7 +21,7 @@ class LoadSongsDialog(QFileDialog):
     def get_songs_by_dir(self):
         """Let the user select a directory to load songs from, recursively
         :return List[Song]: All selected song files"""
-        self.setFileMode(QFileDialog.DirectoryOnly)
+        self.setFileMode(QFileDialog.Directory)
         self.setOption(QFileDialog.DontUseNativeDialog, True)
         self.setOption(QFileDialog.ShowDirsOnly, False)
         # Make sure a working directory has been selected

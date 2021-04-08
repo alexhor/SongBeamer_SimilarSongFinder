@@ -3,7 +3,7 @@ import webbrowser
 from typing import List
 from functools import partial
 
-from PySide2.QtWidgets import QMainWindow, QWidget, QHBoxLayout, QMessageBox, QScrollArea, QGridLayout, QLabel,\
+from PySide6.QtWidgets import QMainWindow, QWidget, QHBoxLayout, QMessageBox, QScrollArea, QGridLayout, QLabel,\
     QPushButton
 import xml.etree.ElementTree as Xml
 from difflib import HtmlDiff
@@ -174,9 +174,9 @@ class SongDiffWindow(QMainWindow):
         # Parse text
         text_as_list: List[tuple[str, str]] = SongDiffWindow.__extract_diff_tag(text)
         # Convert to gui
-        layout = QHBoxLayout(return_widget)
+        layout: QHBoxLayout = QHBoxLayout(return_widget)
         layout.setSpacing(0)
-        layout.setMargin(0)
+        layout.setContentsMargins(0, 0, 0, 0)
         for part in text_as_list:
             if 'default' == part[0]:
                 change_widget = QLabel(part[1])
@@ -233,7 +233,7 @@ class SongDiffWindow(QMainWindow):
 
 if __name__ == '__main__':
     import sys
-    from PySide2.QtWidgets import QApplication
+    from PySide6.QtWidgets import QApplication
 
     app = QApplication(sys.argv)
     # Open the main window
