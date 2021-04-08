@@ -119,8 +119,8 @@ class SimilarityFinder:
                     song_tuple = names[i]
                     score_index = indices[i]
                     similarity_score = similarities[score_index[0]][score_index[1]]
-                    if not 0.999 > similarity_score:
-                        continue
+                    #if not 0.999 > similarity_score:
+                    #    continue
                     song_orig = self._song_lookup[song_tuple[0]]
                     song_copy = self._song_lookup[song_tuple[1]]
 
@@ -131,10 +131,17 @@ class SimilarityFinder:
                             'score': similarity_score
                         }]
                     else:
-                        self._similarities[song_orig].append({
-                            'song': song_copy,
-                            'score': similarity_score
-                        })
+                        similar_songs_list: list = self._similarities[song_orig]
+                        song_exists: bool = False
+                        for song_dict in similar_songs_list:
+                            if song_dict['song'] == song_copy:
+                                song_exists = True
+                                break
+                        if not song_exists:
+                            similar_songs_list.append({
+                                'song': song_copy,
+                                'score': similarity_score
+                            })
                     # Add the similarity to the second song
                     if song_copy not in self._similarities:
                         self._similarities[song_copy] = [{
@@ -142,10 +149,17 @@ class SimilarityFinder:
                             'score': similarity_score
                         }]
                     else:
-                        self._similarities[song_copy].append({
-                            'song': song_orig,
-                            'score': similarity_score
-                        })
+                        similar_songs_list: list = self._similarities[song_copy]
+                        song_exists: bool = False
+                        for song_dict in similar_songs_list:
+                            if song_dict['song'] == song_orig:
+                                song_exists = True
+                                break
+                        if not song_exists:
+                            similar_songs_list.append({
+                                'song': song_orig,
+                                'score': similarity_score
+                            })
 
             # Update progress if not finished
             if processing_not_finished:

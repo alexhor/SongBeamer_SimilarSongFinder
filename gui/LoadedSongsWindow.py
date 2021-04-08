@@ -1,6 +1,7 @@
 import sys
 from math import floor
 from threading import Thread
+from time import sleep
 from typing import List
 
 from PySide6.QtCore import Signal
@@ -93,6 +94,9 @@ class LoadedSongsWindow(QMainWindow):
             if prev_percentage_done != percentage_done:
                 prev_percentage_done = percentage_done
                 self._progress_bar.set_progress.emit(percentage_done)
+            # Take a break here and there to let the gui catch up
+            if 0 == song_num % 100:
+                sleep(1)
         self._progress_bar.set_progress.emit(100)
 
     def _song_added(self, song):

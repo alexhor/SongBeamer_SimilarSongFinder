@@ -1,4 +1,5 @@
 from functools import partial
+from time import sleep
 from typing import List
 
 from PySide6.QtCore import Signal
@@ -65,10 +66,15 @@ class SimilaritiesWindow(QMainWindow):
         # Add all songs to gui
         song: Song
         similar_songs: list
+        song_num: int = 0
         for song, similar_songs in similarities.items():
             song_similarity_list_item: SongSimilarityListItem = SongSimilarityListItem(song, similar_songs)
             self._song_gui_list[song] = song_similarity_list_item
             self.centralWidget.add(song_similarity_list_item)
+            song_num += 1
+            # Take a break here and there to let the gui catch up
+            if 0 == song_num % 100:
+                sleep(1)
 
     def _create_menu_bar(self):
         """Build the windows menu bar"""
