@@ -45,7 +45,6 @@ class SimilaritiesWindow(QMainWindow):
 
         # Show the page with all loaded songs on startup
         self._loaded_songs_window = LoadedSongsWindow(self._loaded_song_list)
-        self._do_show_loaded_songs_gui_action()
 
     def _do_calculating_similarities_done(self):
         """Handle similarities calculation is done"""
@@ -71,7 +70,6 @@ class SimilaritiesWindow(QMainWindow):
         for similarity_group in similarities:
             song_similarity_list_item: SongSimilarityListItem = SongSimilarityListItem(similarity_group,
                                                                                        similarity_scores)
-            #self._song_gui_list[song] = song_similarity_list_item
             self.centralWidget.add(song_similarity_list_item)
             song_num += 1
             # Take a break here and there to let the gui catch up
@@ -83,17 +81,20 @@ class SimilaritiesWindow(QMainWindow):
         menu_bar = self.menuBar()
         # Show loaded songs
         self._show_loaded_songs_action: QAction = QAction("Show &loaded", self)
-        self._show_loaded_songs_action.triggered.connect(self._do_show_loaded_songs_gui_action)
+        self._show_loaded_songs_action.triggered.connect(self.do_show_loaded_songs_gui_action)
         self._find_similarities_action: QAction = QAction("&Find similarities", self)
         self._find_similarities_action.triggered.connect(self._do_find_similarities_gui_action)
+        self._apply_marked_song_deleting_action: QAction = QAction("Apply keep or delete", self)
+        self._apply_marked_song_deleting_action.triggered.connect(self._do_apply_marked_song_deleting_action)
         # Song menu
         songs_menu = menu_bar.addMenu("&Songs")
         songs_menu.addActions([
             self._show_loaded_songs_action,
             self._find_similarities_action,
+            self._apply_marked_song_deleting_action,
         ])
 
-    def _do_show_loaded_songs_gui_action(self):
+    def do_show_loaded_songs_gui_action(self):
         """Show the window with all loaded songs"""
         self._loaded_songs_window.show()
         self._loaded_songs_window.activateWindow()
@@ -104,6 +105,12 @@ class SimilaritiesWindow(QMainWindow):
         self.setCentralWidget(progress_bar)
         self._similarity_finder = SimilarityFinder(self._loaded_song_list, progress_bar,
                                                    self._calculating_similarities_done)
+
+    def _do_apply_marked_song_deleting_action(self):
+        """Delete all songs marked for deleting"""
+        song: Song
+        for song in list(self._loaded_song_list):
+            song.do_keep_or_delete()
 
     def closeEvent(self, event):
         """Handle close event

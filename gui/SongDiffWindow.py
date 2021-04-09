@@ -1,13 +1,13 @@
 import webbrowser
-
 from typing import List
 from functools import partial
-
 from PySide6.QtWidgets import QMainWindow, QWidget, QHBoxLayout, QMessageBox, QScrollArea, QGridLayout, QLabel,\
     QPushButton
 import xml.etree.ElementTree as Xml
 from difflib import HtmlDiff
 import re
+
+from Song import Song
 
 
 class SongDiffWindow(QMainWindow):
@@ -69,6 +69,13 @@ class SongDiffWindow(QMainWindow):
             label: QLabel = QLabel(header_text)
             label.setStyleSheet('font-weight: bold')
             self.centralLayout.addWidget(label, 0, col_num)
+            # Subscribe to changes
+            if 1 == col_num:
+                self._song_updated(label, self._song_orig)
+                self._song_orig.subscribe(Song.UPDATED, partial(self._song_updated, label))
+            else:
+                self._song_updated(label, self._song_similar)
+                self._song_similar.subscribe(Song.UPDATED, partial(self._song_updated, label))
 
         # Prepare for xml parse
         diff_file = diff_file.replace('&nbsp;', ' '). \
@@ -134,32 +141,32 @@ class SongDiffWindow(QMainWindow):
             button_edit: QPushButton = QPushButton('Edit "' + song.get_name() + '"')
             button_edit.clicked.connect(partial(webbrowser.open, str(song)))
             self.centralLayout.addWidget(button_edit, row_count + 2, col_num)
-        row_count += 3
-        button: QPushButton = QPushButton('Keep both')
-        self.centralLayout.addWidget(button, row_count, 1)
 
-    def _keep_song(self, song):
-        """Select the given song to keep
+    @staticmethod
+    def _song_updated(label, song):
+        """The given song was updated
+        :type label: QLabel
+        :param label: The label associated with this song
         :type song: Song
-        :param song: The song to keep
-        """
-        pass
+        :param song: The song that changed"""
+        if song.is_marked_for_keeping():
+            label.setStyleSheet('background-color: green')
+        elif song.is_marked_for_deleting():
+            label.setStyleSheet('background-color: red')
 
-    def _delete_song(self, song, force=False):
-        """Delete the given song
+    @staticmethod
+    def _keep_song(song):
+        """Mark the given song to keep
         :type song: Song
-        :param song: The song to delete
-        :type force: bool
-        :param force: Force the deleting of the song
-        """
-        # Double check before deleting
-        if not force:
-            reply: int = QMessageBox.question(self, 'Delete song', 'Do you really want to delete the song "' +
-                                              song.get_name() + '"?', QMessageBox.Yes, QMessageBox.No)
-            if QMessageBox.Yes != reply:
-                return
-        # Delete the actual file
-        # TODO: Implement
+        :param song: The song to mark"""
+        song.mark_for_keeping()
+
+    @staticmethod
+    def _delete_song(song):
+        """Mark the given song for deleting
+        :type song: Song
+        :param song: The song to mark"""
+        song.mark_for_deleting()
 
     @staticmethod
     def _parse_xml_cell(text):
@@ -237,7 +244,6 @@ if __name__ == '__main__':
 
     app = QApplication(sys.argv)
     # Open the main window
-    from Song import Song
     from pathlib import Path
 
     song_diff: SongDiffWindow = SongDiffWindow(Song(Path("D:\\Git\\SongBeamer_SimilarSongFinder\\Songs\\95 Krasse Thesen.sng")),

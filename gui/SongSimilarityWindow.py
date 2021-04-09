@@ -13,6 +13,8 @@ class SongSimilarityWindow(QMainWindow):
     _song_similarity_list: List[Song]
     """The similarity scores for each song pair"""
     _similarity_scores: dict[tuple[Song, Song], int]
+    """Parking space for all song diff guis"""
+    _diff_window_list: List[SongDiffWindow]
 
     def __init__(self, song_similarity_list, similarity_scores):
         """Display all songs similar to one song
@@ -23,6 +25,7 @@ class SongSimilarityWindow(QMainWindow):
         super().__init__()
         self._song_similarity_list = song_similarity_list
         self._similarity_scores = similarity_scores
+        self._diff_window_list = []
 
         # Main layout
         self.resize(450, 600)
@@ -41,9 +44,23 @@ class SongSimilarityWindow(QMainWindow):
         row_num: int = 0
         for song in self._song_similarity_list:
             button: QPushButton = QPushButton(song.get_name(), self)
-            button.clicked.connect(partial(self.show_other_songs, song))  # TODO: highlight button onclick
+            button.clicked.connect(partial(self.show_other_songs, song))
+            song.subscribe(Song.UPDATED, partial(self._song_updated, button))
+            self._song_updated(button, song)
             self.centralLayout.addWidget(button, row_num, 0)
             row_num += 1
+
+    @staticmethod
+    def _song_updated(button, song):
+        """The given song was updated
+        :type button: QPushButton
+        :param button: The button associated with this song
+        :type song: Song
+        :param song: The song that changed"""
+        if song.is_marked_for_keeping():
+            button.setStyleSheet('background-color: green')
+        elif song.is_marked_for_deleting():
+            button.setStyleSheet('background-color: red')
 
     def _clear_column(self, col_id):
         """Clear a column of all its widgets
@@ -77,10 +94,11 @@ class SongSimilarityWindow(QMainWindow):
                 similarity_score = self._similarity_scores[(similar_song, song)]
             button: QPushButton = QPushButton(similar_song.get_name() + ' (' + str(similarity_score) + ')', self)
             button.clicked.connect(partial(self._show_song_diff, song, similar_song))
+            self._song_updated(button, similar_song)
+            similar_song.subscribe(Song.UPDATED, partial(self._song_updated, button))
             self.centralLayout.addWidget(button, row_num, 1)
 
-    @staticmethod
-    def _show_song_diff(orig_song, similar_song):
+    def _show_song_diff(self, orig_song, similar_song):
         """
         :type orig_song: Song
         :param orig_song: First song to compare with
@@ -89,3 +107,5 @@ class SongSimilarityWindow(QMainWindow):
         diff_gui = SongDiffWindow(orig_song, similar_song)
         diff_gui.show()
         diff_gui.activateWindow()
+        # Keep the window open
+        self._diff_window_list.append(diff_gui)

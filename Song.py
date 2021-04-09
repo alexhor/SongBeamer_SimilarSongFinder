@@ -1,3 +1,4 @@
+import os
 import re
 from pathlib import Path
 
@@ -17,8 +18,14 @@ class Song(Subscribable):
     """Available subscription types"""
     DELETED = 1
     UPDATED = 2
+    """This songs file"""
+    _song_file: Path
     """Id to uniquely identify each song"""
     next_id = 0
+    """Should this song be deleted?"""
+    _marked_for_deleting: bool = False
+    """Should this song be kept?"""
+    _marked_for_keeping: bool = False
 
     def __init__(self, song_file):
         """Extract a song from the given file
@@ -52,6 +59,36 @@ class Song(Subscribable):
         self._song_line_list = []
         self._song_file = Path()
         self.id = -1
+
+    def mark_for_deleting(self):
+        """Mark this song to be deleted"""
+        self._marked_for_deleting = True
+        self._marked_for_keeping = False
+        self._trigger_subscriptions(self.UPDATED, song=self)
+
+    def is_marked_for_deleting(self):
+        """Check if this song is marked for deleting"""
+        return self._marked_for_deleting
+
+    def mark_for_keeping(self):
+        """Mark this song to be deleted"""
+        self._marked_for_keeping = True
+        self._marked_for_deleting = False
+        self._trigger_subscriptions(self.UPDATED, song=self)
+
+    def is_marked_for_keeping(self):
+        """Check if this song is marked for keeping"""
+        return self._marked_for_keeping
+
+    def do_keep_or_delete(self):
+        """Keep or delete this song file"""
+        if self._marked_for_keeping:
+            return
+        elif self._marked_for_deleting:
+            # Delete the actual file
+            self._song_file.unlink(True)
+            # Unload self from program
+            self.unload()
 
     def _read_lines(self, content):
         """Parse the given song file content into valid song lines

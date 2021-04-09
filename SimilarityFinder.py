@@ -14,7 +14,7 @@ from gui.ProgressBar import ProgressBar
 
 
 class SimilarityFinder:
-    def __init__(self, song_list, progress_bar=None, calculations_done_signal=None, similarity_threshold=0.95):
+    def __init__(self, song_list, progress_bar=None, calculations_done_signal=None, similarity_threshold=0.6):
         """Find similarities between songs in a directory
         :type song_list: LoadedSongs
         :param song_list: All songs to compare

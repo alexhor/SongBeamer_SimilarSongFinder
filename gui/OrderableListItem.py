@@ -121,36 +121,48 @@ class SongSimilarityListItem(OrderableListItem):
         # Add similar songs
         self._similar_songs_list = similar_songs_list
         self._similarity_scores = similarity_scores
-        # TODO: Subscribe to song changes
         # Build gui
         self._button = QPushButton(self._similar_songs_list[0].get_name() + '(' + str(len(self._similar_songs_list))
                                    + ')', self)
         self._button.clicked.connect(self._show_details_dialog)
+        self._set_button_color()
         self._layout.addWidget(self._button)
         self._layout.addWidget(self._button)
+        # Subscribe to song changes
+        for song in self._similar_songs_list:
+            song.subscribe(Song.UPDATED, self._song_updated)
+
+    def _set_button_color(self):
+        """Set this items button color"""
+        # Check if all songs were marked
+        all_songs_marked: bool = True
+        for song in self._similar_songs_list:
+            if not song.is_marked_for_keeping() and not song.is_marked_for_deleting():
+                all_songs_marked = False
+                break
+        # Adjust the button color
+        if all_songs_marked:
+            self._button.setStyleSheet('background-color: green')
+        else:
+            self._button.setStyleSheet('background-color: gray')
 
     def _song_updated(self, song):
         """A song was updated"""
-        if song == self._song:
-            self._trigger_subscriptions(OrderableListItem.UPDATED, item=self)
+        self._set_button_color()
+        self._trigger_subscriptions(OrderableListItem.UPDATED, item=self)
 
     def delete(self, song=None):
         """Delete this item
         :type song: Song
         :param song: This parameter is passed, when the delete call is coming directly from a song
         """
-        if None is song or song == self._song:
-            super().delete()
+        super().delete()
 
     def _show_details_dialog(self):
         """Show the similarity details"""
         song_similarity_gui: SongSimilarityWindow = SongSimilarityWindow(self._similar_songs_list, self._similarity_scores)
         song_similarity_gui.show()
         song_similarity_gui.activateWindow()
-
-    def remove_song(self):
-        """Remove this song from the program"""
-        self._song.unload()
 
     def get_order_string(self):
         """Get the song title this item is ordered by

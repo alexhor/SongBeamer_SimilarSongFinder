@@ -34,7 +34,6 @@ class LoadedSongsWindow(QMainWindow):
         self._song_list: LoadedSongs = loaded_songs_list
         self._song_list.subscribe(LoadedSongs.ADDED, self._song_added)
         self._song_list.subscribe(LoadedSongs.DELETED, self._song_deleted)
-        self._song_list.subscribe(LoadedSongs.UPDATED, self._song_updated)
         self._song_gui_list: dict[Song: QWidget] = {}
         self._progress_bar = ProgressBar()
         self._load_songs_dialog = LoadSongsDialog(self, self._progress_bar)
@@ -121,12 +120,6 @@ class LoadedSongsWindow(QMainWindow):
         list_item: LoadedSongListItem = self._song_gui_list[song]
         self._song_gui_list.pop(song)
         self._list_widget.delete_item(list_item)
-
-    def _song_updated(self, song):
-        """A songs info was updated
-        :type song: Song
-        :param song: The songs whose info was updated"""
-        raise NotImplementedError()
 
 
 if __name__ == '__main__':
