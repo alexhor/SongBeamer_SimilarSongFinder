@@ -155,7 +155,7 @@ class SimilarityFinder:
     @staticmethod
     def _get_similarity_groups(similarity_pairs_list):
         """Get all grouped similarities
-        :type similarity_pairs_list: dict[tuple[Song], int]
+        :type similarity_pairs_list: dict[tuple[Song, Song], int]
         :param similarity_pairs_list: All similarity pairs with songs as indexes
         :return list[list[Song]]: All similarity groups with songs as indexes"""
         graph = nx.Graph()
@@ -166,5 +166,5 @@ class SimilarityFinder:
 
     def get_similarities(self):
         """Get a list of all calculated similarities
-        :return list[list[Song]], dict[tuple[Song], int]: All calculated similarities"""
+        :return list[list[Song]], dict[tuple[Song, Song], int]: All calculated similarities"""
         return self._similarities, self._similarity_scores

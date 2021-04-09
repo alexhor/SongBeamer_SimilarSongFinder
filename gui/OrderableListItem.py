@@ -106,17 +106,21 @@ class SongSimilarityListItem(OrderableListItem):
     _song: Song
     """All similar songs"""
     _similar_songs_list: List[Song]
+    """The similarity scores for each song pair"""
+    _similarity_scores: dict[tuple[Song, Song], int]
     """The button opening the similarity details"""
     _button: QPushButton
 
-    def __init__(self, similar_songs_list):
+    def __init__(self, similar_songs_list, similarity_scores):
         """Init gui
         :type similar_songs_list: List[Song]
         :param similar_songs_list: A group of songs that are similar
-        """
+        :type similarity_scores: dict[tuple[Song, Song], int]
+        :param similarity_scores: The similarity scores for each song pair"""
         super().__init__()
         # Add similar songs
         self._similar_songs_list = similar_songs_list
+        self._similarity_scores = similarity_scores
         # TODO: Subscribe to song changes
         # Build gui
         self._button = QPushButton(self._similar_songs_list[0].get_name() + '(' + str(len(self._similar_songs_list))
@@ -140,10 +144,9 @@ class SongSimilarityListItem(OrderableListItem):
 
     def _show_details_dialog(self):
         """Show the similarity details"""
-        #song_similarity_gui: SongSimilarityWindow = SongSimilarityWindow(self._song, self._similar_songs_list)
-        #song_similarity_gui.show()
-        #song_similarity_gui.activateWindow()
-        pass
+        song_similarity_gui: SongSimilarityWindow = SongSimilarityWindow(self._similar_songs_list, self._similarity_scores)
+        song_similarity_gui.show()
+        song_similarity_gui.activateWindow()
 
     def remove_song(self):
         """Remove this song from the program"""

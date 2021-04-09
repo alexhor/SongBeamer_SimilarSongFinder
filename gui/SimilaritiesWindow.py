@@ -59,7 +59,7 @@ class SimilaritiesWindow(QMainWindow):
     def _build_similarities_gui(self, similarities, similarity_scores):
         """Build a gui for a list of similarities
         :type similarities: list[list[Song]]
-        :type similarity_scores: dict[tuple[Song], int]"""
+        :type similarity_scores: dict[tuple[Song, Song], int]"""
         # Setup gui
         self.centralWidget = OrderableListWidget()
         self.setCentralWidget(self.centralWidget)
@@ -69,7 +69,8 @@ class SimilaritiesWindow(QMainWindow):
         similar_songs: list
         song_num: int = 0
         for similarity_group in similarities:
-            song_similarity_list_item: SongSimilarityListItem = SongSimilarityListItem(similarity_group)
+            song_similarity_list_item: SongSimilarityListItem = SongSimilarityListItem(similarity_group,
+                                                                                       similarity_scores)
             #self._song_gui_list[song] = song_similarity_list_item
             self.centralWidget.add(song_similarity_list_item)
             song_num += 1
