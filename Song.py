@@ -42,7 +42,7 @@ class Song(Subscribable):
         self._song_line_list = []
         # Read file line by line and convert them into song lines
         try:
-            with open(song_file, encoding='Windows-1252') as file:
+            with open(song_file, encoding='UTF-8') as file:
                 content = file.readlines()
             self._read_lines(content)
             # After
