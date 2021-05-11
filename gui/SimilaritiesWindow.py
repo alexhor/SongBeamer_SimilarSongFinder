@@ -38,7 +38,7 @@ class SimilaritiesWindow(QMainWindow):
         self._calculating_similarities_done.connect(self._do_calculating_similarities_done)
 
         # Setup gui
-        self.resize(450, 600)
+        self.resize(900, 600)
         self.setWindowTitle("SongBeamer Song Similarity Finder")
         self._create_menu_bar()
         self._build_similarities_gui([], {})
