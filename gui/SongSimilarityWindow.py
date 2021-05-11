@@ -28,7 +28,7 @@ class SongSimilarityWindow(QMainWindow):
         self._diff_window_list = []
 
         # Main layout
-        self.resize(450, 600)
+        self.resize(900, 600)
         self.setWindowTitle(self._song_similarity_list[0].get_name() + ' - Similar Songs')
         self.scrollableWrapper = QScrollArea()
         self.setCentralWidget(self.scrollableWrapper)

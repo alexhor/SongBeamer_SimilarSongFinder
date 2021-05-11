@@ -25,7 +25,7 @@ class LoadedSongsWindow(QMainWindow):
         super().__init__()
 
         # Main layout
-        self.resize(450, 600)
+        self.resize(900, 600)
         self.setWindowTitle("Loaded Songs")
         self._list_widget = OrderableListWidget()
         self.setCentralWidget(self._list_widget)
